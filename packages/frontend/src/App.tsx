@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './pages/Dashboard';
 import TwoFactorSetupPage from './pages/TwoFactorSetupPage';
 import TwoFactorVerifyPage from './pages/TwoFactorVerifyPage';
+import Landing from './pages/Landing';
 import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/2fa-verify" element={<TwoFactorVerifyPage />} />
@@ -31,7 +33,6 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
@@ -53,4 +54,5 @@ function SignupPage() {
     </div>
   );
 }
+
 
