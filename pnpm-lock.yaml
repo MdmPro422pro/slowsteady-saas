@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       concurrently:
-        specifier: ^8.2.0
-        version: 8.2.2
+        specifier: ^9.2.1
+        version: 9.2.1
       pnpm:
         specifier: ^8.0.0
         version: 8.15.9
@@ -207,10 +207,6 @@ packages:
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
-
-  '@babel/runtime@7.28.4':
-    resolution: {integrity: sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ==}
-    engines: {node: '>=6.9.0'}
 
   '@babel/template@7.27.2':
     resolution: {integrity: sha512-LPDZ85aEJyYSd18/DkjNh4/y1ntkE5KwUHWTiqgRxruuZL2F1yuHligVHLvcHY2vMHXttKFpJn6LwfI7cw7ODw==}
@@ -799,9 +795,9 @@ packages:
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
-  concurrently@8.2.2:
-    resolution: {integrity: sha512-1dP4gpXFhei8IOtlXRE/T/4H88ElHgTiUzh71YUmtjTEHMSRS2Z/fgOxHSxxusGHogsRfxNq1vyAwxSC+EVyDg==}
-    engines: {node: ^14.13.0 || >=16.0.0}
+  concurrently@9.2.1:
+    resolution: {integrity: sha512-fsfrO0MxV64Znoy8/l1vVIjjHa29SZyyqPgQBwhiDcaW8wJc2W3XWVOGx4M3oJBnv/zdUZIIp1gDeS98GzP8Ng==}
+    engines: {node: '>=18'}
     hasBin: true
 
   content-disposition@0.5.4:
@@ -836,10 +832,6 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
-
-  date-fns@2.30.0:
-    resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
-    engines: {node: '>=0.11'}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -1565,9 +1557,6 @@ packages:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
 
-  spawn-command@0.0.2:
-    resolution: {integrity: sha512-zC8zGoGkmc8J9ndvml8Xksr1Amk9qBujgbF0JAIWO7kXr43w0h/0GJNM/Vustixu+YE8N/MTrQ7N31FvHUACxQ==}
-
   speakeasy@2.0.0:
     resolution: {integrity: sha512-lW2A2s5LKi8rwu77ewisuUOtlCydF/hmQSOJjpTqTj1gZLkNgTaYnyvfxy2WBr4T/h+9c4g8HIITfj83OkFQFw==}
     engines: {node: '>= 0.10.0'}
@@ -1889,8 +1878,6 @@ snapshots:
     dependencies:
       '@babel/core': 7.28.5
       '@babel/helper-plugin-utils': 7.27.1
-
-  '@babel/runtime@7.28.4': {}
 
   '@babel/template@7.27.2':
     dependencies:
@@ -2429,14 +2416,11 @@ snapshots:
 
   concat-map@0.0.1: {}
 
-  concurrently@8.2.2:
+  concurrently@9.2.1:
     dependencies:
       chalk: 4.1.2
-      date-fns: 2.30.0
-      lodash: 4.17.21
       rxjs: 7.8.2
       shell-quote: 1.8.3
-      spawn-command: 0.0.2
       supports-color: 8.1.1
       tree-kill: 1.2.2
       yargs: 17.7.2
@@ -2463,10 +2447,6 @@ snapshots:
   cssesc@3.0.0: {}
 
   csstype@3.2.3: {}
-
-  date-fns@2.30.0:
-    dependencies:
-      '@babel/runtime': 7.28.4
 
   debug@2.6.9:
     dependencies:
@@ -3201,8 +3181,6 @@ snapshots:
       source-map: 0.6.1
 
   source-map@0.6.1: {}
-
-  spawn-command@0.0.2: {}
 
   speakeasy@2.0.0:
     dependencies:
