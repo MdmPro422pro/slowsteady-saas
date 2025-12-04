@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
-import { authAPI } from '../lib/api';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-interface LoginProps {
-  onSuccess: () => void;
-  onSwitchToSignup: () => void;
-  onRequire2FA: (tempToken: string) => void;
-}
-
-export default function Login({ onSuccess, onSwitchToSignup, onRequire2FA }: LoginProps) {
+export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,14 +16,12 @@ export default function Login({ onSuccess, onSwitchToSignup, onRequire2FA }: Log
     setLoading(true);
 
     try {
-      const response = await authAPI.login({ email, password });
+      const result = await login(email, password);
 
-      if (response.requiresTwoFactor && response.tempToken) {
-        onRequire2FA(response.tempToken);
+      if (result.requiresTwoFactor && result.tempToken) {
+        navigate('/2fa-verify', { state: { tempToken: result.tempToken } });
       } else {
-        localStorage.setItem('accessToken', response.accessToken);
-        localStorage.setItem('refreshToken', response.refreshToken);
-        onSuccess();
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed');
@@ -79,12 +74,9 @@ export default function Login({ onSuccess, onSwitchToSignup, onRequire2FA }: Log
 
       <p className="mt-4 text-sm text-center text-gray-600">
         Don't have an account?{' '}
-        <button
-          onClick={onSwitchToSignup}
-          className="text-blue-600 hover:underline"
-        >
+        <Link to="/signup" className="text-blue-600 hover:underline">
           Sign up
-        </button>
+        </Link>
       </p>
     </div>
   );
