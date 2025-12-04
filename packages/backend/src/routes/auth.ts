@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { body, validationResult } from 'express-validator';
 import prisma from '../lib/prisma';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '../lib/jwt';
-import { authenticate, AuthRequest } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
@@ -141,7 +141,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
 });
 
 // Get current user
-router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
+router.get('/me', authenticate, async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.userId },
@@ -167,7 +167,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 // Logout (client-side should clear tokens, but we can add token blacklisting here if needed)
-router.post('/logout', authenticate, (req: AuthRequest, res: Response) => {
+router.post('/logout', authenticate, (req: Request, res: Response) => {
   res.json({ message: 'Logged out successfully' });
 });
 

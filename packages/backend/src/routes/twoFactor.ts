@@ -1,15 +1,15 @@
-import { Router, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
 import { body, validationResult } from 'express-validator';
 import prisma from '../lib/prisma';
-import { authenticate, AuthRequest } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 import { generateAccessToken, generateRefreshToken } from '../lib/jwt';
 
 const router = Router();
 
 // Generate 2FA secret and QR code
-router.post('/setup', authenticate, async (req: AuthRequest, res: Response) => {
+router.post('/setup', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -53,7 +53,7 @@ router.post(
   '/verify',
   authenticate,
   [body('code').isLength({ min: 6, max: 6 })],
-  async (req: AuthRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -102,7 +102,7 @@ router.post(
 router.post(
   '/login-verify',
   [body('code').isLength({ min: 6, max: 6 })],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -163,7 +163,7 @@ router.post(
   '/disable',
   authenticate,
   [body('password').notEmpty()],
-  async (req: AuthRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
