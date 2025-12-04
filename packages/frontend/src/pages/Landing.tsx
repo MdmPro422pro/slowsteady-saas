@@ -1,8 +1,15 @@
 import { Link } from 'react-router-dom';
+import { WalletButton } from '../components/WalletButton';
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-dark-black text-offwhite flex flex-col">
+      {/* Navigation Bar */}
+      <nav className="flex justify-between items-center px-6 py-4 bg-dark-nearblack">
+        <h1 className="text-2xl font-bold text-gold">Slowsteady</h1>
+        <WalletButton />
+      </nav>
+
       {/* Hero Section */}
       <header className="flex flex-col items-center justify-center flex-1 text-center px-6">
         <h1 className="text-5xl font-bold mb-4 text-gold">

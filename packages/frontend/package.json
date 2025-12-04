@@ -10,10 +10,14 @@
     "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
+    "@rainbow-me/rainbowkit": "~2.2.9",
+    "@tanstack/react-query": "~5.90.12",
     "axios": "^1.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.10.0"
+    "react-router-dom": "^7.10.0",
+    "viem": "~2.41.2",
+    "wagmi": "~2.19.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
