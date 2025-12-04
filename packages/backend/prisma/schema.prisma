@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  password          String?   // Null for OAuth-only users
+  name              String?
+  
+  // OAuth fields
+  googleId          String?   @unique
+  githubId          String?   @unique
+  oauthProvider     String?   // "google" | "github"
+  
+  // 2FA / TOTP
+  twoFactorEnabled  Boolean   @default(false)
+  twoFactorSecret   String?   // Base32 encoded secret for TOTP
+  
+  // Metadata
+  emailVerified     Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([email])
+  @@index([googleId])
+  @@index([githubId])
+}
