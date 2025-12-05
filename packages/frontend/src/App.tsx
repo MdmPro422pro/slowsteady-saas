@@ -13,6 +13,8 @@ import BusinessDashboard from './pages/BusinessDashboard';
 import PersonalDashboard from './pages/PersonalDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProductsPage from './pages/ProductsPage';
+import GamingPage from './pages/GamingPage';
+import FaucetsPage from './pages/FaucetsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { config } from './lib/wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
@@ -35,6 +37,8 @@ export default function App() {
                 <Route path="/personal" element={<PersonalDashboard />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/products" element={<ProductsPage />} />
+                <Route path="/gaming" element={<GamingPage />} />
+                <Route path="/faucets" element={<FaucetsPage />} />
                 <Route
                   path="/dashboard"
                   element={

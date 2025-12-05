@@ -291,6 +291,114 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Gaming Section */}
+      <section className="py-16 px-6 bg-midnight-violet">
+        <div className="max-w-7xl mx-auto">
+          <Link to="/gaming" className="block text-center mb-12 hover:opacity-80 transition-opacity">
+            <h2 className="text-4xl font-bold text-gold mb-2">Gaming?</h2>
+            <p className="text-frosted-mint text-sm">(Just passing some time?)</p>
+          </Link>
+          
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Game 1 */}
+            <div className="rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+              <div className="relative w-full h-48 bg-midnight-violet overflow-hidden flex items-center justify-center">
+                <div className="text-6xl">🎮</div>
+              </div>
+              <div className="p-6 text-center flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gold mb-2 group-hover:text-frosted-mint transition-colors">Action Game</h3>
+                  <p className="text-frosted-mint text-sm mb-4">Fast-paced action to pass the time.</p>
+                </div>
+                <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Play Now →</span>
+              </div>
+            </div>
+
+            {/* Game 2 */}
+            <div className="rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+              <div className="relative w-full h-48 bg-midnight-violet overflow-hidden flex items-center justify-center">
+                <div className="text-6xl">🎯</div>
+              </div>
+              <div className="p-6 text-center flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gold mb-2 group-hover:text-frosted-mint transition-colors">Strategy Game</h3>
+                  <p className="text-frosted-mint text-sm mb-4">Test your strategic thinking skills.</p>
+                </div>
+                <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Play Now →</span>
+              </div>
+            </div>
+
+            {/* Game 3 */}
+            <div className="rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+              <div className="relative w-full h-48 bg-midnight-violet overflow-hidden flex items-center justify-center">
+                <div className="text-6xl">🎲</div>
+              </div>
+              <div className="p-6 text-center flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gold mb-2 group-hover:text-frosted-mint transition-colors">Casual Game</h3>
+                  <p className="text-frosted-mint text-sm mb-4">Relax and unwind with casual gameplay.</p>
+                </div>
+                <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Play Now →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Faucets Section */}
+      <section className="py-16 px-6 bg-shadow-grey">
+        <div className="max-w-7xl mx-auto">
+          <Link to="/faucets" className="block text-center mb-12 hover:opacity-80 transition-opacity">
+            <h2 className="text-4xl font-bold text-gold mb-2">Faucets</h2>
+            <p className="text-frosted-mint text-sm">(Go On Get Sum!!)</p>
+          </Link>
+          
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Faucet 1 */}
+            <div className="rounded-lg bg-midnight-violet hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+              <div className="relative w-full h-48 bg-shadow-grey overflow-hidden flex items-center justify-center">
+                <div className="text-6xl">💧</div>
+              </div>
+              <div className="p-6 text-center flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gold mb-2 group-hover:text-frosted-mint transition-colors">Free Crypto</h3>
+                  <p className="text-frosted-mint text-sm mb-4">Claim free crypto from trusted faucets.</p>
+                </div>
+                <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Get Crypto →</span>
+              </div>
+            </div>
+
+            {/* Faucet 2 */}
+            <div className="rounded-lg bg-midnight-violet hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+              <div className="relative w-full h-48 bg-shadow-grey overflow-hidden flex items-center justify-center">
+                <div className="text-6xl">🚰</div>
+              </div>
+              <div className="p-6 text-center flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gold mb-2 group-hover:text-frosted-mint transition-colors">Testnet Tokens</h3>
+                  <p className="text-frosted-mint text-sm mb-4">Get testnet tokens for development.</p>
+                </div>
+                <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Get Crypto →</span>
+              </div>
+            </div>
+
+            {/* Faucet 3 */}
+            <div className="rounded-lg bg-midnight-violet hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+              <div className="relative w-full h-48 bg-shadow-grey overflow-hidden flex items-center justify-center">
+                <div className="text-6xl">💰</div>
+              </div>
+              <div className="p-6 text-center flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gold mb-2 group-hover:text-frosted-mint transition-colors">Earn Rewards</h3>
+                  <p className="text-frosted-mint text-sm mb-4">Earn crypto rewards through faucets.</p>
+                </div>
+                <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Get Crypto →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="bg-midnight-violet py-16 px-6">
         <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8 text-center">
