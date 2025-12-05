@@ -53,7 +53,8 @@ export default function Landing() {
       <section className="py-12 px-6 bg-shadow-grey">
         <div className="flex flex-col items-center gap-6">
           <div className="flex gap-6">
-            <button 
+            <Link 
+              to="/business"
               className="px-8 py-4 border-2 rounded-lg text-gold hover:bg-gold hover:text-shadow-grey transition-all duration-300"
               style={{ 
                 borderColor: '#8c705f',
@@ -62,8 +63,9 @@ export default function Landing() {
               }}
             >
               Business?
-            </button>
-            <button 
+            </Link>
+            <Link 
+              to="/personal"
               className="px-8 py-4 border-2 rounded-lg text-gold hover:bg-gold hover:text-shadow-grey transition-all duration-300"
               style={{ 
                 borderColor: '#8c705f',
@@ -72,9 +74,10 @@ export default function Landing() {
               }}
             >
               Personal?
-            </button>
+            </Link>
           </div>
-          <button 
+          <Link 
+            to="/admin"
             className="px-8 py-4 border-2 rounded-lg text-gold hover:bg-gold hover:text-shadow-grey transition-all duration-300"
             style={{ 
               borderColor: '#8c705f',
@@ -83,7 +86,7 @@ export default function Landing() {
             }}
           >
             Admin?
-          </button>
+          </Link>
         </div>
       </section>
 

@@ -9,6 +9,9 @@ import Dashboard from './pages/Dashboard';
 import TwoFactorSetupPage from './pages/TwoFactorSetupPage';
 import TwoFactorVerifyPage from './pages/TwoFactorVerifyPage';
 import Landing from './pages/Landing';
+import BusinessDashboard from './pages/BusinessDashboard';
+import PersonalDashboard from './pages/PersonalDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { config } from './lib/wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
@@ -27,6 +30,9 @@ export default function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/2fa-verify" element={<TwoFactorVerifyPage />} />
+                <Route path="/business" element={<BusinessDashboard />} />
+                <Route path="/personal" element={<PersonalDashboard />} />
+                <Route path="/admin" element={<AdminDashboard />} />
                 <Route
                   path="/dashboard"
                   element={
