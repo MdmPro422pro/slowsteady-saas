@@ -1,20 +1,31 @@
 import { Link } from 'react-router-dom';
 import { WalletButton } from '../components/WalletButton';
+import logoVideo from '../assets/logo.mp4';
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-dark-black text-offwhite flex flex-col">
       {/* Navigation Bar */}
       <nav className="flex justify-between items-center px-6 py-4 bg-dark-nearblack">
-        <h1 className="text-2xl font-bold text-gold">Slowsteady</h1>
+        <video 
+          src={logoVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="h-12 w-auto object-contain"
+        />
         <WalletButton />
       </nav>
 
       {/* Hero Section */}
       <header className="flex flex-col items-center justify-center flex-1 text-center px-6">
-        <h1 className="text-5xl font-bold mb-4 text-gold">
-          Slowsteady Crypto Platform
+        <h1 className="text-6xl font-bold mb-2 text-gold">
+          MDMPro
         </h1>
+        <p className="text-xl font-light text-gold mb-8">
+          Here, for what you need.
+        </p>
         <p className="text-lg text-lightgrey max-w-xl mb-8">
           Secure, transparent, and built for traders who demand performance.
         </p>
