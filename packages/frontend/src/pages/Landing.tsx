@@ -213,8 +213,10 @@ export default function Landing() {
       {/* Products Section */}
       <section className="py-16 px-6 bg-shadow-grey">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-gold text-center mb-2">Need Products?</h2>
-          <p className="text-center text-frosted-mint mb-12 text-sm">(Helpful things to have!)</p>
+          <Link to="/products" className="block text-center mb-12 hover:opacity-80 transition-opacity">
+            <h2 className="text-4xl font-bold text-gold mb-2">Need Products?</h2>
+            <p className="text-frosted-mint text-sm">(Helpful things to have!)</p>
+          </Link>
           
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Product 1 - Ledger */}
