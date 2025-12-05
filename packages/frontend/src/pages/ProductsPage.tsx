@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { WalletButton } from '../components/WalletButton';
+import { DashboardPanel } from '../components/DashboardPanel';
 
 export default function ProductsPage() {
   const [activeSection, setActiveSection] = useState('all');
@@ -41,6 +42,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-midnight-violet">
+      <DashboardPanel />
       {/* Header */}
       <header className="bg-shadow-grey border-b-2 border-faded-copper">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
