@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
+import { ChatProfileSetup } from '../components/ChatProfileSetup';
 
 interface Message {
   id: string;
@@ -10,14 +11,26 @@ interface Message {
   text: string;
   timestamp: Date;
   isOwn?: boolean;
+  room: string;
 }
 
-interface User {
-  id: string;
+interface ChatProfile {
   username: string;
   avatar: string;
-  status: 'online' | 'away' | 'busy';
+  gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+  age?: number;
+  location?: string;
+  walletAddress: string;
 }
+
+const CHAT_ROOMS = [
+  { id: 'general', name: 'Community (General)', icon: '💬' },
+  { id: 'stocks', name: 'Stocks', icon: '📈' },
+  { id: 'crypto', name: 'Crypto', icon: '₿' },
+  { id: 'security', name: 'Security', icon: '🔒' },
+  { id: 'items-to-watch', name: 'Items To Watch', icon: '👀' },
+  { id: 'dwzycoin', name: 'What really is DwzyCoin anyways?', icon: '🪙' },
+];
 
 export default function CommunityPage() {
   const { address, isConnected } = useAccount();
@@ -25,42 +38,53 @@ export default function CommunityPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
+  const [chatProfile, setChatProfile] = useState<ChatProfile | null>(null);
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
+  const [currentRoom, setCurrentRoom] = useState('general');
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       username: 'CryptoWhale',
       text: 'Just launched my token! Check it out on the Business Dashboard 🚀',
       timestamp: new Date(Date.now() - 300000),
+      room: 'general',
     },
     {
       id: '2',
       username: 'DiamondHands',
       text: 'Anyone staking their tokens yet? The APY looks insane!',
       timestamp: new Date(Date.now() - 240000),
+      room: 'crypto',
     },
     {
       id: '3',
       username: 'MoonBoy',
       text: 'When are we adding more games? I need my degen fix 🎰',
       timestamp: new Date(Date.now() - 180000),
+      room: 'general',
     },
     {
       id: '4',
       username: 'AdminPro',
       text: 'New faucet links just dropped! Check the Faucets page 💰',
       timestamp: new Date(Date.now() - 120000),
+      room: 'general',
     },
-  ]);
-
-  const [onlineUsers] = useState<User[]>([
-    { id: '1', username: 'CryptoWhale', avatar: '🐋', status: 'online' },
-    { id: '2', username: 'DiamondHands', avatar: '💎', status: 'online' },
-    { id: '3', username: 'MoonBoy', avatar: '🌙', status: 'online' },
-    { id: '4', username: 'AdminPro', avatar: '👑', status: 'busy' },
-    { id: '5', username: 'DeFiGuru', avatar: '🧙', status: 'online' },
-    { id: '6', username: 'TokenMaster', avatar: '🎯', status: 'away' },
-    { id: '7', username: 'Web3Dev', avatar: '⚡', status: 'online' },
-    { id: '8', username: 'NFTCollector', avatar: '🖼️', status: 'online' },
+    {
+      id: '5',
+      username: 'StockGuru',
+      text: 'Tesla hitting new highs! Who else is riding this wave?',
+      timestamp: new Date(Date.now() - 90000),
+      room: 'stocks',
+    },
+    {
+      id: '6',
+      username: 'SecureMax',
+      text: 'Always use hardware wallets! Ledger and Tangem are solid choices.',
+      timestamp: new Date(Date.now() - 60000),
+      room: 'security',
+    },
   ]);
 
   const [messageInput, setMessageInput] = useState('');
@@ -93,10 +117,11 @@ export default function CommunityPage() {
 
     const newMessage: Message = {
       id: Date.now().toString(),
-      username: currentUser,
+      username: chatProfile?.username || currentUser,
       text: messageInput,
       timestamp: new Date(),
       isOwn: true,
+      room: currentRoom,
     };
 
     setMessages([...messages, newMessage]);
@@ -143,8 +168,33 @@ export default function CommunityPage() {
         .then(res => res.json())
         .then(data => setHasPaid(data.hasPaid))
         .catch(() => setHasPaid(false));
+      
+      // Check for existing chat profile
+      const savedProfile = localStorage.getItem(`chat_profile_${address}`);
+      if (savedProfile) {
+        setChatProfile(JSON.parse(savedProfile));
+      } else {
+        // Show profile setup modal on first visit
+        setShowProfileSetup(true);
+      }
     }
   }, [isConnected, address]);
+
+  const filteredMessages = messages.filter(msg => msg.room === currentRoom);
+
+  const handleProfileComplete = (profile: Omit<ChatProfile, 'walletAddress'>) => {
+    if (!address) return;
+    
+    const fullProfile: ChatProfile = {
+      ...profile,
+      walletAddress: address,
+    };
+    
+    // Save to localStorage
+    localStorage.setItem(`chat_profile_${address}`, JSON.stringify(fullProfile));
+    setChatProfile(fullProfile);
+    setShowProfileSetup(false);
+  };
 
   const formatTimestamp = (date: Date) => {
     const now = new Date();
@@ -155,19 +205,6 @@ export default function CommunityPage() {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
     return date.toLocaleDateString();
-  };
-
-  const getStatusColor = (status: User['status']) => {
-    switch (status) {
-      case 'online':
-        return 'bg-green-500';
-      case 'away':
-        return 'bg-yellow-500';
-      case 'busy':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
-    }
   };
 
   return (
@@ -188,35 +225,51 @@ export default function CommunityPage() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
           
-          {/* Online Users Sidebar */}
+          {/* Room Selector Sidebar */}
           <div className="lg:col-span-1 bg-shadow-grey border-2 border-clay-soil rounded-lg p-4 overflow-y-auto">
-            <h2 className="text-gold font-bold text-lg mb-4 flex items-center gap-2">
-              <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-              Online ({onlineUsers.length})
-            </h2>
+            <h2 className="text-gold font-bold text-lg mb-4">Chat Rooms</h2>
             <div className="space-y-2">
-              {onlineUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-midnight-violet transition-colors cursor-pointer"
+              {CHAT_ROOMS.map((room) => (
+                <button
+                  key={room.id}
+                  onClick={() => setCurrentRoom(room.id)}
+                  className={`w-full text-left p-3 rounded-lg transition-colors ${
+                    currentRoom === room.id
+                      ? 'bg-clay-soil text-frosted-mint'
+                      : 'bg-midnight-violet text-frosted-mint hover:bg-clay-soil hover:bg-opacity-50'
+                  }`}
                 >
-                  <div className="relative">
-                    <span className="text-2xl">{user.avatar}</span>
-                    <span
-                      className={`absolute bottom-0 right-0 w-3 h-3 ${getStatusColor(
-                        user.status
-                      )} rounded-full border-2 border-shadow-grey`}
-                    ></span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{room.icon}</span>
+                    <span className="text-sm font-medium">{room.name}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* User Profile Section */}
+            {chatProfile && (
+              <div className="mt-6 pt-6 border-t-2 border-clay-soil">
+                <h3 className="text-gold font-bold text-sm mb-3">Your Profile</h3>
+                <div className="flex items-center gap-3 p-2 bg-midnight-violet rounded-lg">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-clay-soil flex items-center justify-center">
+                    {chatProfile.avatar.startsWith('data:') ? (
+                      <img src={chatProfile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl">{chatProfile.avatar}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-frosted-mint font-medium text-sm truncate">
-                      {user.username}
+                      {chatProfile.username}
                     </p>
-                    <p className="text-faded-copper text-xs capitalize">{user.status}</p>
+                    {chatProfile.location && (
+                      <p className="text-faded-copper text-xs">{chatProfile.location}</p>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Chat Area */}
@@ -224,10 +277,17 @@ export default function CommunityPage() {
             
             {/* Chat Header */}
             <div className="border-b-2 border-clay-soil p-4">
-              <h2 className="text-gold font-bold text-xl">General Chat</h2>
-              <p className="text-faded-copper text-sm">
-                Connect with the MDMPro community
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{CHAT_ROOMS.find(r => r.id === currentRoom)?.icon}</span>
+                <div>
+                  <h2 className="text-gold font-bold text-xl">
+                    {CHAT_ROOMS.find(r => r.id === currentRoom)?.name}
+                  </h2>
+                  <p className="text-faded-copper text-sm">
+                    {filteredMessages.length} messages
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Messages Area */}
@@ -271,7 +331,7 @@ export default function CommunityPage() {
                 </div>
               ) : (
                 <>
-                  {messages.map((message) => (
+                  {filteredMessages.map((message) => (
                     <div
                       key={message.id}
                       className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}
@@ -404,6 +464,14 @@ export default function CommunityPage() {
             </p>
           </div>
         </div>
+      )}
+
+      {/* Profile Setup Modal */}
+      {showProfileSetup && (
+        <ChatProfileSetup
+          onComplete={handleProfileComplete}
+          onClose={() => setShowProfileSetup(false)}
+        />
       )}
     </div>
   );

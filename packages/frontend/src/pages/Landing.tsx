@@ -11,14 +11,16 @@ export default function Landing() {
       
       {/* Navigation Bar */}
       <nav className="flex justify-between items-center px-6 py-4 bg-midnight-violet">
-        <video 
-          src={logoVideo}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="h-12 w-auto object-contain"
-        />
+        <Link to="/community" className="group cursor-pointer">
+          <video 
+            src={logoVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="h-12 w-auto object-contain transition-transform group-hover:scale-110"
+          />
+        </Link>
         <WalletButton />
       </nav>
 
