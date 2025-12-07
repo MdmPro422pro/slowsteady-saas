@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi';
 import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
 import { ChatProfileSetup } from '../components/ChatProfileSetup';
+import { getQuotesBySymbol, formatPrice, formatPercentChange } from '../lib/coinmarketcap';
 
 interface Message {
   id: string;
@@ -91,6 +92,15 @@ export default function CommunityPage() {
   const [currentUser] = useState('You');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Crypto prices for crypto chat room
+  interface CryptoPrice {
+    symbol: string;
+    price: number;
+    change24h: number;
+  }
+  const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice[]>([]);
+  const [cryptoLoading, setCryptoLoading] = useState(false);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -98,6 +108,32 @@ export default function CommunityPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Fetch crypto prices when in crypto room
+  useEffect(() => {
+    if (currentRoom !== 'crypto') return;
+
+    const fetchCryptoPrices = async () => {
+      try {
+        setCryptoLoading(true);
+        const quotes = await getQuotesBySymbol('BTC,ETH,BNB,SOL,ADA');
+        const prices = Object.values(quotes).map((crypto: any) => ({
+          symbol: crypto.symbol,
+          price: crypto.quote.USD.price,
+          change24h: crypto.quote.USD.percent_change_24h,
+        }));
+        setCryptoPrices(prices);
+      } catch (error) {
+        console.error('Error fetching crypto prices:', error);
+      } finally {
+        setCryptoLoading(false);
+      }
+    };
+
+    fetchCryptoPrices();
+    const interval = setInterval(fetchCryptoPrices, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, [currentRoom]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -272,6 +308,49 @@ export default function CommunityPage() {
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Crypto Prices Section - Only in Crypto Room */}
+            {currentRoom === 'crypto' && (
+              <div className="mt-6 pt-6 border-t-2 border-clay-soil">
+                <h3 className="text-gold font-bold text-sm mb-3">💰 Live Prices</h3>
+                {cryptoLoading ? (
+                  <div className="text-center text-frosted-mint text-xs py-4">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gold"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {cryptoPrices.map((crypto) => {
+                      const changeFormatted = formatPercentChange(crypto.change24h);
+                      return (
+                        <div
+                          key={crypto.symbol}
+                          className="p-2 bg-midnight-violet rounded-lg"
+                        >
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-gold font-bold text-xs">{crypto.symbol}</span>
+                            <span
+                              className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                                crypto.change24h >= 0
+                                  ? 'bg-green-500/20 text-green-400'
+                                  : 'bg-red-500/20 text-red-400'
+                              }`}
+                            >
+                              {changeFormatted.value}
+                            </span>
+                          </div>
+                          <p className="text-frosted-mint font-bold text-sm">
+                            {formatPrice(crypto.price)}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <p className="text-faded-copper text-xs mt-3 text-center">
+                  Updates every minute
+                </p>
               </div>
             )}
           </div>
