@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
+import { Contract } from '../types/contract';
+import { ContractManagementModal } from '../components/ContractManagementModal';
 
 export default function AdminMasterControl() {
   const navigate = useNavigate();
@@ -9,6 +11,10 @@ export default function AdminMasterControl() {
   const [users, setUsers] = useState<any[]>([]);
   const [memberships, setMemberships] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+  const [contractModalMode, setContractModalMode] = useState<'create' | 'edit' | 'view'>('create');
   const [siteSettings, setSiteSettings] = useState({
     maintenanceMode: false,
     registrationEnabled: true,
@@ -54,6 +60,10 @@ export default function AdminMasterControl() {
       }
     }
     setChatMessages(allMessages);
+
+    // Load contracts
+    const storedContracts = localStorage.getItem('contracts') || '[]';
+    setContracts(JSON.parse(storedContracts));
   };
 
   const handleLogout = () => {
@@ -93,6 +103,46 @@ export default function AdminMasterControl() {
     }
   };
 
+  // Contract management functions
+  const handleSaveContract = (contract: Contract) => {
+    const existingIndex = contracts.findIndex(c => c.id === contract.id);
+    let updatedContracts;
+
+    if (existingIndex >= 0) {
+      updatedContracts = [...contracts];
+      updatedContracts[existingIndex] = contract;
+    } else {
+      updatedContracts = [...contracts, contract];
+    }
+
+    setContracts(updatedContracts);
+    localStorage.setItem('contracts', JSON.stringify(updatedContracts));
+  };
+
+  const openContractModal = (mode: 'create' | 'edit' | 'view', contract: Contract | null = null) => {
+    setContractModalMode(mode);
+    setSelectedContract(contract);
+    setIsContractModalOpen(true);
+  };
+
+  const deleteContract = (contractId: string) => {
+    if (window.confirm('Are you sure you want to delete this contract?')) {
+      const filtered = contracts.filter(c => c.id !== contractId);
+      setContracts(filtered);
+      localStorage.setItem('contracts', JSON.stringify(filtered));
+    }
+  };
+
+  const terminateContract = (contractId: string) => {
+    if (window.confirm('Are you sure you want to terminate this contract? This will set status to Terminated.')) {
+      const updated = contracts.map(c =>
+        c.id === contractId ? { ...c, status: 'Terminated' as const, endDate: new Date().toISOString() } : c
+      );
+      setContracts(updated);
+      localStorage.setItem('contracts', JSON.stringify(updated));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-shadow-grey text-frosted-mint">
       {/* Header */}
@@ -124,6 +174,7 @@ export default function AdminMasterControl() {
           {[
             { id: 'dashboard', label: 'Dashboard', icon: '📊' },
             { id: 'users', label: 'Users', icon: '👥' },
+            { id: 'contracts', label: 'Contracts', icon: '📄' },
             { id: 'memberships', label: 'Memberships', icon: '💎' },
             { id: 'chat', label: 'Chat Control', icon: '💬' },
             { id: 'payments', label: 'Payments', icon: '💳' },
@@ -237,6 +288,156 @@ export default function AdminMasterControl() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Contracts Tab */}
+        {activeTab === 'contracts' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gold">Contract Management</h2>
+                <p className="text-frosted-mint text-sm">Manage client smart contracts and access</p>
+              </div>
+              <button
+                onClick={() => openContractModal('create')}
+                className="px-6 py-3 rounded-lg bg-gold text-shadow-grey font-semibold hover:bg-faded-copper transition-colors"
+              >
+                + New Contract
+              </button>
+            </div>
+
+            {/* Contract Stats */}
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="bg-midnight-violet border-2 border-faded-copper rounded-lg p-4">
+                <div className="text-faded-copper text-sm mb-1">Total Contracts</div>
+                <div className="text-gold text-2xl font-bold">{contracts.length}</div>
+              </div>
+              <div className="bg-midnight-violet border-2 border-faded-copper rounded-lg p-4">
+                <div className="text-faded-copper text-sm mb-1">Active</div>
+                <div className="text-gold text-2xl font-bold">
+                  {contracts.filter(c => c.status === 'Active').length}
+                </div>
+              </div>
+              <div className="bg-midnight-violet border-2 border-faded-copper rounded-lg p-4">
+                <div className="text-faded-copper text-sm mb-1">Total Value</div>
+                <div className="text-gold text-2xl font-bold">
+                  ${contracts.reduce((sum, c) => sum + c.value, 0).toLocaleString()}
+                </div>
+              </div>
+              <div className="bg-midnight-violet border-2 border-faded-copper rounded-lg p-4">
+                <div className="text-faded-copper text-sm mb-1">Balance Due</div>
+                <div className="text-gold text-2xl font-bold">
+                  ${contracts.reduce((sum, c) => sum + c.balanceDue, 0).toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            {/* Contracts List */}
+            {contracts.length === 0 ? (
+              <div className="bg-midnight-violet border-2 border-gold rounded-lg p-12 text-center">
+                <div className="text-6xl mb-4">📄</div>
+                <h3 className="text-gold font-semibold text-xl mb-2">No Contracts Yet</h3>
+                <p className="text-frosted-mint mb-6">Create your first client contract to get started</p>
+                <button
+                  onClick={() => openContractModal('create')}
+                  className="px-6 py-3 rounded-lg bg-gold text-shadow-grey font-semibold hover:bg-faded-copper transition-colors"
+                >
+                  Create Contract
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {contracts.map(contract => (
+                  <div
+                    key={contract.id}
+                    className="bg-midnight-violet border-2 border-faded-copper rounded-lg p-6 hover:border-gold transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-xl font-bold text-gold">{contract.contractName}</h3>
+                          <span
+                            className={`text-xs px-3 py-1 rounded-full ${
+                              contract.status === 'Active'
+                                ? 'bg-gold text-shadow-grey'
+                                : contract.status === 'Completed'
+                                ? 'bg-faded-copper text-shadow-grey'
+                                : contract.status === 'Terminated'
+                                ? 'bg-clay-soil text-frosted-mint'
+                                : 'bg-shadow-grey text-frosted-mint'
+                            }`}
+                          >
+                            {contract.status}
+                          </span>
+                        </div>
+                        <div className="text-frosted-mint mb-1">
+                          <span className="font-semibold">{contract.clientCompany}</span> • {contract.contractType}
+                        </div>
+                        <div className="text-faded-copper text-sm">
+                          Created: {new Date(contract.createdDate).toLocaleDateString()} • 
+                          {contract.contractAddress && ` Address: ${contract.contractAddress.slice(0, 10)}...`}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-gold font-bold text-xl">${contract.value.toLocaleString()}</div>
+                        <div className="text-faded-copper text-sm">
+                          Due: ${contract.balanceDue.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-4 mb-4">
+                      <div className="bg-shadow-grey rounded-lg p-3">
+                        <div className="text-faded-copper text-xs mb-1">Authorized Users</div>
+                        <div className="text-frosted-mint font-semibold">
+                          {contract.authorizedUsers.filter(u => u.isActive).length} Active
+                        </div>
+                      </div>
+                      <div className="bg-shadow-grey rounded-lg p-3">
+                        <div className="text-faded-copper text-xs mb-1">Milestones</div>
+                        <div className="text-frosted-mint font-semibold">
+                          {contract.milestones.filter(m => m.status === 'Completed').length} / {contract.milestones.length}
+                        </div>
+                      </div>
+                      <div className="bg-shadow-grey rounded-lg p-3">
+                        <div className="text-faded-copper text-xs mb-1">Network</div>
+                        <div className="text-frosted-mint font-semibold">{contract.blockchainNetwork}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openContractModal('view', contract)}
+                        className="px-4 py-2 rounded-lg bg-shadow-grey text-frosted-mint hover:bg-clay-soil transition-colors text-sm font-semibold"
+                      >
+                        👁️ View
+                      </button>
+                      <button
+                        onClick={() => openContractModal('edit', contract)}
+                        className="px-4 py-2 rounded-lg bg-faded-copper text-shadow-grey hover:bg-gold transition-colors text-sm font-semibold"
+                      >
+                        ✏️ Edit
+                      </button>
+                      {contract.status === 'Active' && (
+                        <button
+                          onClick={() => terminateContract(contract.id)}
+                          className="px-4 py-2 rounded-lg bg-clay-soil text-frosted-mint hover:bg-faded-copper transition-colors text-sm font-semibold"
+                        >
+                          ⚠️ Terminate
+                        </button>
+                      )}
+                      <button
+                        onClick={() => deleteContract(contract.id)}
+                        className="px-4 py-2 rounded-lg bg-clay-soil text-frosted-mint hover:bg-faded-copper transition-colors text-sm font-semibold ml-auto"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -401,6 +602,15 @@ export default function AdminMasterControl() {
           </div>
         )}
       </div>
+
+      {/* Contract Management Modal */}
+      <ContractManagementModal
+        isOpen={isContractModalOpen}
+        onClose={() => setIsContractModalOpen(false)}
+        contract={selectedContract}
+        onSave={handleSaveContract}
+        mode={contractModalMode}
+      />
     </div>
   );
 }
