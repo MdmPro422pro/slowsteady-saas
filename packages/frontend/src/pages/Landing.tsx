@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
 import { MembershipPurchaseModal } from '../components/MembershipPurchaseModal';
+import { AdminLoginModal } from '../components/AdminLoginModal';
 import logoVideo from '../assets/logo.mp4';
 
 const MEMBERSHIP_TIERS = [
@@ -15,6 +16,8 @@ export default function Landing() {
   const [selectedTier, setSelectedTier] = useState<typeof MEMBERSHIP_TIERS[0] | null>(null);
   const [currentTier, setCurrentTier] = useState<typeof MEMBERSHIP_TIERS[0] | null>(null);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [adminClickCount, setAdminClickCount] = useState(0);
 
   useEffect(() => {
     // Load current membership tier from localStorage
@@ -43,6 +46,20 @@ export default function Landing() {
   const handlePurchaseClick = (tier: typeof MEMBERSHIP_TIERS[0]) => {
     setSelectedTier(tier);
     setIsPurchaseModalOpen(true);
+  };
+
+  const handleAdminClick = () => {
+    const newCount = adminClickCount + 1;
+    setAdminClickCount(newCount);
+    
+    // Require 3 clicks to open admin login
+    if (newCount >= 3) {
+      setIsAdminModalOpen(true);
+      setAdminClickCount(0);
+    }
+    
+    // Reset counter after 2 seconds
+    setTimeout(() => setAdminClickCount(0), 2000);
   };
 
   return (
@@ -550,9 +567,24 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-6 text-center text-frosted-mint bg-midnight-violet">
+      <footer className="py-6 text-center text-frosted-mint bg-midnight-violet relative">
         <p>© 2025 Slowsteady Crypto. All rights reserved.</p>
+        
+        {/* Secret Admin Trigger - Bottom Left */}
+        <button
+          onClick={handleAdminClick}
+          className="absolute bottom-6 left-6 w-12 h-12 opacity-0 hover:opacity-10 transition-opacity duration-300 cursor-default"
+          aria-label="System Access"
+        >
+          <div className="w-full h-full bg-gold rounded-full"></div>
+        </button>
       </footer>
+
+      {/* Admin Login Modal */}
+      <AdminLoginModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+      />
     </div>
   );
 }

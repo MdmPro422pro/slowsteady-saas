@@ -12,6 +12,7 @@ import Landing from './pages/Landing';
 import BusinessDashboard from './pages/BusinessDashboard';
 import PersonalDashboard from './pages/PersonalDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminMasterControl from './pages/AdminMasterControl';
 import ProductsPage from './pages/ProductsPage';
 import GamingPage from './pages/GamingPage';
 import FaucetsPage from './pages/FaucetsPage';
@@ -37,6 +38,7 @@ export default function App() {
                 <Route path="/business" element={<BusinessDashboard />} />
                 <Route path="/personal" element={<PersonalDashboard />} />
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin-master" element={<AdminMasterControl />} />
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/gaming" element={<GamingPage />} />
                 <Route path="/faucets" element={<FaucetsPage />} />
