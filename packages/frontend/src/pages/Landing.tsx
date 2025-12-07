@@ -401,22 +401,53 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Memberships Section */}
+      <section className="py-16 px-6 bg-midnight-violet">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-gold text-center mb-4">Memberships</h2>
+          <p className="text-center text-frosted-mint mb-12 text-lg">Choose the membership that fits your needs</p>
+          
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Tier 1 - $99/month */}
+            <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-center border-2 border-faded-copper">
+              <h3 className="text-3xl font-bold text-gold mb-4">$99</h3>
+              <p className="text-frosted-mint text-sm mb-6">per month</p>
+              <p className="text-faded-copper text-sm">more info soon...</p>
+            </div>
+
+            {/* Tier 2 - $299/month */}
+            <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-center border-2 border-gold">
+              <h3 className="text-3xl font-bold text-gold mb-4">$299</h3>
+              <p className="text-frosted-mint text-sm mb-6">per month</p>
+              <p className="text-faded-copper text-sm">more info soon...</p>
+            </div>
+
+            {/* Tier 3 - $999/month */}
+            <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-center border-2 border-faded-copper">
+              <h3 className="text-3xl font-bold text-gold mb-4">$999</h3>
+              <p className="text-frosted-mint text-sm mb-6">per month</p>
+              <p className="text-faded-copper text-sm">more info soon...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section className="bg-midnight-violet py-16 px-6">
+      <section className="bg-shadow-grey py-16 px-6">
         <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8 text-center">
-          <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition">
+          <div className="p-6 rounded-lg bg-midnight-violet hover:bg-clay-soil transition">
             <h2 className="text-xl font-bold text-gold mb-2">Fast Trades</h2>
             <p className="text-frosted-mint">
               Execute trades instantly with our optimized backend and Redis caching.
             </p>
           </div>
-          <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition">
+          <div className="p-6 rounded-lg bg-midnight-violet hover:bg-clay-soil transition">
             <h2 className="text-xl font-bold text-gold mb-2">Secure Auth</h2>
             <p className="text-frosted-mint">
               Two‑factor authentication and JWT‑based sessions keep your assets safe.
             </p>
           </div>
-          <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition">
+          <div className="p-6 rounded-lg bg-midnight-violet hover:bg-clay-soil transition">
             <h2 className="text-xl font-bold text-gold mb-2">Analytics</h2>
             <p className="text-frosted-mint">
               Real‑time dashboards with high‑contrast charts for clear decision making.
