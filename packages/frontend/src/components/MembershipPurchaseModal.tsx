@@ -218,7 +218,7 @@ export function MembershipPurchaseModal({
               </button>
               <button
                 onClick={handlePurchase}
-                disabled={isProcessing || !isConnected || isSameTier}
+                disabled={isProcessing || !isConnected || !!isSameTier}
                 className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors ${
                   isProcessing || !isConnected || isSameTier
                     ? 'bg-shadow-grey text-faded-copper cursor-not-allowed'
