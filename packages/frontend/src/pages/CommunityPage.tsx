@@ -115,6 +115,12 @@ export default function CommunityPage() {
       return;
     }
 
+    // Check if user has a profile - prompt to create one
+    if (!chatProfile) {
+      setShowProfileSetup(true);
+      return;
+    }
+
     const newMessage: Message = {
       id: Date.now().toString(),
       username: chatProfile?.username || currentUser,
@@ -173,10 +179,8 @@ export default function CommunityPage() {
       const savedProfile = localStorage.getItem(`chat_profile_${address}`);
       if (savedProfile) {
         setChatProfile(JSON.parse(savedProfile));
-      } else {
-        // Show profile setup modal on first visit
-        setShowProfileSetup(true);
       }
+      // Don't automatically show profile setup - let user explore first
     }
   }, [isConnected, address]);
 
@@ -372,6 +376,8 @@ export default function CommunityPage() {
                       ? 'Connect wallet to chat...'
                       : !hasPaid
                       ? 'Pay $5 to unlock chat...'
+                      : !chatProfile
+                      ? 'Create profile to send messages...'
                       : 'Type your message...'
                   }
                   disabled={!isConnected || !hasPaid}
@@ -390,6 +396,8 @@ export default function CommunityPage() {
                   ? '🔒 Connect your wallet to unlock chat features'
                   : !hasPaid
                   ? '💰 Pay $5 to send messages and see full chat history'
+                  : !chatProfile
+                  ? '📝 Create your profile to start sending messages'
                   : '✅ Premium chat unlocked - enjoy full access!'}
               </p>
             </div>
