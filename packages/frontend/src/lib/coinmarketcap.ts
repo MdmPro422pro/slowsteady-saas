@@ -1,12 +1,11 @@
 import axios from 'axios';
 
-const CMC_API_KEY = import.meta.env.VITE_COINMARKETCAP_API_KEY;
-const CMC_BASE_URL = 'https://pro-api.coinmarketcap.com';
+// Use backend proxy instead of calling CMC API directly (CORS restriction)
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 const cmcApi = axios.create({
-  baseURL: CMC_BASE_URL,
+  baseURL: `${BACKEND_URL}/api/crypto`,
   headers: {
-    'X-CMC_PRO_API_KEY': CMC_API_KEY,
     'Accept': 'application/json',
   },
 });
@@ -73,7 +72,7 @@ export async function getLatestListings(
   convert: string = 'USD'
 ): Promise<CryptoCurrency[]> {
   try {
-    const response = await cmcApi.get('/v1/cryptocurrency/listings/latest', {
+    const response = await cmcApi.get('/listings', {
       params: { start, limit, convert },
     });
     return response.data.data;
@@ -90,7 +89,7 @@ export async function getLatestListings(
  */
 export async function getTrending(limit: number = 10): Promise<CryptoCurrency[]> {
   try {
-    const response = await cmcApi.get('/v1/cryptocurrency/trending/latest', {
+    const response = await cmcApi.get('/trending', {
       params: { limit },
     });
     return response.data.data;
@@ -111,7 +110,7 @@ export async function getQuotesBySymbol(
   convert: string = 'USD'
 ): Promise<Record<string, CryptoCurrency>> {
   try {
-    const response = await cmcApi.get('/v2/cryptocurrency/quotes/latest', {
+    const response = await cmcApi.get('/quotes', {
       params: { symbol: symbols, convert },
     });
     return response.data.data;
@@ -132,7 +131,7 @@ export async function getQuotesById(
   convert: string = 'USD'
 ): Promise<Record<string, CryptoCurrency>> {
   try {
-    const response = await cmcApi.get('/v2/cryptocurrency/quotes/latest', {
+    const response = await cmcApi.get('/quotes', {
       params: { id: ids, convert },
     });
     return response.data.data;
@@ -149,7 +148,7 @@ export async function getQuotesById(
  */
 export async function getGlobalMetrics(convert: string = 'USD'): Promise<GlobalMetrics> {
   try {
-    const response = await cmcApi.get('/v1/global-metrics/quotes/latest', {
+    const response = await cmcApi.get('/global-metrics', {
       params: { convert },
     });
     return response.data.data.quote[convert];
@@ -187,7 +186,7 @@ export async function getGainersLosers(
   convert: string = 'USD'
 ): Promise<{ gainers: CryptoCurrency[]; losers: CryptoCurrency[] }> {
   try {
-    const response = await cmcApi.get('/v1/cryptocurrency/trending/gainers-losers', {
+    const response = await cmcApi.get('/gainers-losers', {
       params: { limit, convert },
     });
     return {
