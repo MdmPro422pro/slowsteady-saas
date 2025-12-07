@@ -1,39 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getQuotesBySymbol, formatPrice, formatPercentChange } from '../lib/coinmarketcap';
-
-interface CryptoPrice {
-  symbol: string;
-  price: number;
-  change24h: number;
-}
 
 export function DashboardPanel() {
   const [isOpen, setIsOpen] = useState(false);
-  const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchCryptoPrices();
-    const interval = setInterval(fetchCryptoPrices, 60000); // Update every minute
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchCryptoPrices = async () => {
-    try {
-      const quotes = await getQuotesBySymbol('BTC,ETH,BNB');
-      const prices: CryptoPrice[] = Object.values(quotes).map((crypto: any) => ({
-        symbol: crypto.symbol,
-        price: crypto.quote.USD.price,
-        change24h: crypto.quote.USD.percent_change_24h,
-      }));
-      setCryptoPrices(prices);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching crypto prices:', error);
-      setLoading(false);
-    }
-  };
 
   const menuItems = [
     { icon: '📊', label: 'Dashboard', path: '/dashboard' },
@@ -94,33 +63,6 @@ export function DashboardPanel() {
                 <span className="text-gold font-semibold">$48,500</span>
               </div>
             </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-shadow-grey rounded-lg border border-gold">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-gold font-semibold">💰 Live Crypto Prices</p>
-              <Link to="/crypto-tracker" className="text-xs text-faded-copper hover:text-gold transition-colors">
-                View All →
-              </Link>
-            </div>
-            {loading ? (
-              <div className="text-center text-frosted-mint text-xs py-2">Loading...</div>
-            ) : (
-              <div className="space-y-2">
-                {cryptoPrices.map((crypto) => {
-                  const changeData = formatPercentChange(crypto.change24h);
-                  return (
-                    <div key={crypto.symbol} className="flex justify-between items-center text-xs">
-                      <span className="text-frosted-mint font-semibold">{crypto.symbol}</span>
-                      <div className="text-right">
-                        <div className="text-gold">{formatPrice(crypto.price)}</div>
-                        <div className={changeData.color}>{changeData.value}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
         </div>
       </div>

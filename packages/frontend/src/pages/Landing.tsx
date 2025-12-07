@@ -4,7 +4,6 @@ import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
 import { MembershipPurchaseModal } from '../components/MembershipPurchaseModal';
 import { AdminLoginModal } from '../components/AdminLoginModal';
-import CryptoMarketWidget from '../components/CryptoMarketWidget';
 import logoVideo from '../assets/logo.mp4';
 
 const MEMBERSHIP_TIERS = [
@@ -566,9 +565,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-      {/* Live Crypto Market Widget */}
-      <CryptoMarketWidget />
 
       {/* Footer */}
       <footer className="py-6 text-center text-frosted-mint bg-midnight-violet relative">
