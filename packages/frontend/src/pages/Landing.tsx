@@ -1,9 +1,50 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
+import { MembershipPurchaseModal } from '../components/MembershipPurchaseModal';
 import logoVideo from '../assets/logo.mp4';
 
+const MEMBERSHIP_TIERS = [
+  { name: 'Basic', price: 99, level: 1 },
+  { name: 'Pro', price: 299, level: 2 },
+  { name: 'Elite', price: 999, level: 3 },
+];
+
 export default function Landing() {
+  const [selectedTier, setSelectedTier] = useState<typeof MEMBERSHIP_TIERS[0] | null>(null);
+  const [currentTier, setCurrentTier] = useState<typeof MEMBERSHIP_TIERS[0] | null>(null);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+
+  useEffect(() => {
+    // Load current membership tier from localStorage
+    const stored = localStorage.getItem('membershipTier');
+    if (stored) {
+      try {
+        setCurrentTier(JSON.parse(stored));
+      } catch (e) {
+        console.error('Error loading membership tier:', e);
+      }
+    }
+
+    // Check for upgrade hash in URL
+    const hash = window.location.hash;
+    if (hash.startsWith('#upgrade-')) {
+      const level = parseInt(hash.replace('#upgrade-', ''));
+      const tier = MEMBERSHIP_TIERS.find(t => t.level === level);
+      if (tier) {
+        setSelectedTier(tier);
+        setIsPurchaseModalOpen(true);
+        window.location.hash = '';
+      }
+    }
+  }, []);
+
+  const handlePurchaseClick = (tier: typeof MEMBERSHIP_TIERS[0]) => {
+    setSelectedTier(tier);
+    setIsPurchaseModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-shadow-grey text-frosted-mint flex flex-col">
       {/* Dashboard Panel */}
@@ -409,28 +450,80 @@ export default function Landing() {
           
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Tier 1 - $99/month */}
-            <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-center border-2 border-faded-copper">
-              <h3 className="text-3xl font-bold text-gold mb-4">$99</h3>
+            <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-center border-2 border-faded-copper flex flex-col">
+              <h3 className="text-3xl font-bold text-gold mb-2">{MEMBERSHIP_TIERS[0].name}</h3>
+              <div className="text-4xl font-bold text-gold mb-2">${MEMBERSHIP_TIERS[0].price}</div>
               <p className="text-frosted-mint text-sm mb-6">per month</p>
-              <p className="text-faded-copper text-sm">more info soon...</p>
+              <p className="text-faded-copper text-sm mb-6 flex-1">more info soon...</p>
+              {currentTier?.level === MEMBERSHIP_TIERS[0].level && (
+                <div className="mb-4">
+                  <span className="inline-block px-3 py-1 bg-gold text-shadow-grey text-xs font-semibold rounded-full">
+                    Current Plan
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={() => handlePurchaseClick(MEMBERSHIP_TIERS[0])}
+                className="w-full py-3 px-6 rounded-lg bg-gold text-shadow-grey font-semibold hover:bg-faded-copper transition-colors"
+              >
+                {currentTier?.level === MEMBERSHIP_TIERS[0].level ? 'Manage' : currentTier && currentTier.level > MEMBERSHIP_TIERS[0].level ? 'Downgrade' : 'Get Started'}
+              </button>
             </div>
 
             {/* Tier 2 - $299/month */}
-            <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-center border-2 border-gold">
-              <h3 className="text-3xl font-bold text-gold mb-4">$299</h3>
+            <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-center border-2 border-gold flex flex-col">
+              <h3 className="text-3xl font-bold text-gold mb-2">{MEMBERSHIP_TIERS[1].name}</h3>
+              <div className="text-4xl font-bold text-gold mb-2">${MEMBERSHIP_TIERS[1].price}</div>
               <p className="text-frosted-mint text-sm mb-6">per month</p>
-              <p className="text-faded-copper text-sm">more info soon...</p>
+              <p className="text-faded-copper text-sm mb-6 flex-1">more info soon...</p>
+              {currentTier?.level === MEMBERSHIP_TIERS[1].level && (
+                <div className="mb-4">
+                  <span className="inline-block px-3 py-1 bg-gold text-shadow-grey text-xs font-semibold rounded-full">
+                    Current Plan
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={() => handlePurchaseClick(MEMBERSHIP_TIERS[1])}
+                className="w-full py-3 px-6 rounded-lg bg-gold text-shadow-grey font-semibold hover:bg-faded-copper transition-colors"
+              >
+                {currentTier?.level === MEMBERSHIP_TIERS[1].level ? 'Manage' : currentTier && currentTier.level > MEMBERSHIP_TIERS[1].level ? 'Downgrade' : 'Upgrade'}
+              </button>
             </div>
 
             {/* Tier 3 - $999/month */}
-            <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-center border-2 border-faded-copper">
-              <h3 className="text-3xl font-bold text-gold mb-4">$999</h3>
+            <div className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-center border-2 border-faded-copper flex flex-col">
+              <h3 className="text-3xl font-bold text-gold mb-2">{MEMBERSHIP_TIERS[2].name}</h3>
+              <div className="text-4xl font-bold text-gold mb-2">${MEMBERSHIP_TIERS[2].price}</div>
               <p className="text-frosted-mint text-sm mb-6">per month</p>
-              <p className="text-faded-copper text-sm">more info soon...</p>
+              <p className="text-faded-copper text-sm mb-6 flex-1">more info soon...</p>
+              {currentTier?.level === MEMBERSHIP_TIERS[2].level && (
+                <div className="mb-4">
+                  <span className="inline-block px-3 py-1 bg-gold text-shadow-grey text-xs font-semibold rounded-full">
+                    Current Plan 🏆
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={() => handlePurchaseClick(MEMBERSHIP_TIERS[2])}
+                className="w-full py-3 px-6 rounded-lg bg-gold text-shadow-grey font-semibold hover:bg-faded-copper transition-colors"
+              >
+                {currentTier?.level === MEMBERSHIP_TIERS[2].level ? 'Manage' : 'Go Elite'}
+              </button>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Purchase Modal */}
+      {selectedTier && (
+        <MembershipPurchaseModal
+          isOpen={isPurchaseModalOpen}
+          onClose={() => setIsPurchaseModalOpen(false)}
+          tier={selectedTier}
+          currentTier={currentTier}
+        />
+      )}
 
       {/* Features Section */}
       <section className="bg-shadow-grey py-16 px-6">
