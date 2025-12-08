@@ -1,33 +1,53 @@
-import express from 'express';
+import express, { Response } from 'express';
+import { body, param, validationResult } from 'express-validator';
 import prisma from '../lib/prisma';
+import { authenticateWallet, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
+// Validation helper
+const handleValidationErrors = (req: express.Request, res: express.Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return true;
+  }
+  return false;
+};
+
 // Create a new contract
-router.post('/', async (req, res) => {
-  try {
-    const {
-      walletAddress,
-      title,
-      description,
-      content,
-      templateType,
-      partyAName,
-      partyAAddress,
-      partyBName,
-      partyBAddress,
-    } = req.body;
+router.post(
+  '/',
+  authenticateWallet,
+  [
+    body('title').trim().isLength({ min: 1, max: 200 }).escape(),
+    body('description').optional().trim().isLength({ max: 1000 }).escape(),
+    body('content').trim().isLength({ min: 1 }),
+    body('templateType').optional().isIn(['nda', 'service', 'sale', 'custom']),
+  ],
+  async (req: AuthRequest, res: Response) => {
+    if (handleValidationErrors(req, res)) return;
 
-    if (!walletAddress || !title || !content) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
+    try {
+      const {
+        title,
+        description,
+        content,
+        templateType,
+        partyAName,
+        partyAAddress,
+        partyBName,
+        partyBAddress,
+      } = req.body;
 
-    // For Web3-only users, create a user record if it doesn't exist
-    let user = await prisma.user.findFirst({
-      where: { walletAddress },
-    });
+      const walletAddress = req.walletAddress!;
 
-    if (!user) {
+      // For Web3-only users, create a user record if it doesn't exist
+      let user = await prisma.user.findFirst({
+        where: { walletAddress },
+      });
+
+      if (!user) {
       user = await prisma.user.create({
         data: {
           walletAddress,
@@ -60,76 +80,116 @@ router.post('/', async (req, res) => {
 });
 
 // Get all contracts for a wallet address
-router.get('/wallet/:walletAddress', async (req, res) => {
-  try {
-    const { walletAddress } = req.params;
-    const { status } = req.query;
+router.get(
+  '/wallet/:walletAddress',
+  authenticateWallet,
+  [param('walletAddress').matches(/^0x[a-fA-F0-9]{40}$/)],
+  async (req: AuthRequest, res: Response) => {
+    if (handleValidationErrors(req, res)) return;
 
-    const contracts = await prisma.contract.findMany({
-      where: {
-        walletAddress,
-        ...(status && { status: status as string }),
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    try {
+      const { walletAddress } = req.params;
+      const { status } = req.query;
 
-    res.json(contracts);
-  } catch (error: any) {
-    console.error('Get contracts error:', error);
+      // Ensure user can only access their own contracts
+      if (req.walletAddress !== walletAddress) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      const contracts = await prisma.contract.findMany({
+        where: {
+          walletAddress,
+          ...(status && { status: status as string }),
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      res.json(contracts);
+    } catch (error: any) {
+      console.error('Get contracts error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Get a single contract by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
+router.get(
+  '/:id',
+  authenticateWallet,
+  [param('id').isUUID()],
+  async (req: AuthRequest, res: Response) => {
+    if (handleValidationErrors(req, res)) return;
 
-    const contract = await prisma.contract.findUnique({
-      where: { id },
-    });
+    try {
+      const { id } = req.params;
 
-    if (!contract) {
-      return res.status(404).json({ error: 'Contract not found' });
+      const contract = await prisma.contract.findUnique({
+        where: { id },
+      });
+
+      if (!contract) {
+        return res.status(404).json({ error: 'Contract not found' });
+      }
+
+      // Ensure user owns the contract
+      if (contract.walletAddress !== req.walletAddress) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      res.json(contract);
+    } catch (error: any) {
+      console.error('Get contract error:', error);
+      res.status(500).json({ error: error.message });
     }
-
-    res.json(contract);
-  } catch (error: any) {
-    console.error('Get contract error:', error);
-    res.status(500).json({ error: error.message });
   }
-});
+);
 
 // Update a contract
-router.put('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const {
-      title,
-      description,
-      content,
-      templateType,
-      status,
-      partyAName,
-      partyAAddress,
-      partyBName,
-      partyBAddress,
-      signedByPartyA,
-      signedByPartyB,
-    } = req.body;
+router.put(
+  '/:id',
+  authenticateWallet,
+  [
+    param('id').isUUID(),
+    body('title').optional().trim().isLength({ min: 1, max: 200 }).escape(),
+    body('description').optional().trim().isLength({ max: 1000 }).escape(),
+    body('content').optional().trim().isLength({ min: 1 }),
+    body('status').optional().isIn(['draft', 'active', 'signed', 'cancelled']),
+  ],
+  async (req: AuthRequest, res: Response) => {
+    if (handleValidationErrors(req, res)) return;
 
-    // Check if contract exists
-    const existing = await prisma.contract.findUnique({
-      where: { id },
-    });
+    try {
+      const { id } = req.params;
+      const {
+        title,
+        description,
+        content,
+        templateType,
+        status,
+        partyAName,
+        partyAAddress,
+        partyBName,
+        partyBAddress,
+        signedByPartyA,
+        signedByPartyB,
+      } = req.body;
 
-    if (!existing) {
-      return res.status(404).json({ error: 'Contract not found' });
-    }
+      // Check if contract exists and user owns it
+      const existing = await prisma.contract.findUnique({
+        where: { id },
+      });
 
-    // Prepare update data
+      if (!existing) {
+        return res.status(404).json({ error: 'Contract not found' });
+      }
+
+      // Ensure user owns the contract
+      if (existing.walletAddress !== req.walletAddress) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      // Prepare update data
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
@@ -162,26 +222,37 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a contract
-router.delete('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
+router.delete(
+  '/:id',
+  authenticateWallet,
+  [param('id').isUUID()],
+  async (req: AuthRequest, res: Response) => {
+    if (handleValidationErrors(req, res)) return;
 
-    const contract = await prisma.contract.findUnique({
-      where: { id },
-    });
+    try {
+      const { id } = req.params;
 
-    if (!contract) {
-      return res.status(404).json({ error: 'Contract not found' });
-    }
+      const contract = await prisma.contract.findUnique({
+        where: { id },
+      });
 
-    await prisma.contract.delete({
-      where: { id },
-    });
+      if (!contract) {
+        return res.status(404).json({ error: 'Contract not found' });
+      }
 
-    res.json({ success: true, message: 'Contract deleted' });
-  } catch (error: any) {
-    console.error('Delete contract error:', error);
-    res.status(500).json({ error: error.message });
+      // Ensure user owns the contract
+      if (contract.walletAddress !== req.walletAddress) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      await prisma.contract.delete({
+        where: { id },
+      });
+
+      res.json({ success: true, message: 'Contract deleted' });
+    } catch (error: any) {
+      console.error('Delete contract error:', error);
+      res.status(500).json({ error: error.message });
   }
 });
 
