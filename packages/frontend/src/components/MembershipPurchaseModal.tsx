@@ -28,7 +28,7 @@ export function MembershipPurchaseModal({
   tier, 
   currentTier 
 }: MembershipPurchaseModalProps) {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [purchaseComplete, setPurchaseComplete] = useState(false);
@@ -48,26 +48,32 @@ export function MembershipPurchaseModal({
 
     setIsProcessing(true);
     
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      setPurchaseComplete(true);
-      
-      // Store membership tier in localStorage
-      localStorage.setItem('membershipTier', JSON.stringify(tier));
-      
-      // Show upgrade option if not on highest tier
-      if (hasHigherTier) {
-        setTimeout(() => {
-          setShowUpgrade(true);
-        }, 1000);
-      } else {
-        setTimeout(() => {
-          onClose();
-          window.location.reload();
-        }, 2000);
+    try {
+      // Call backend to create Stripe checkout session
+      const response = await fetch('http://localhost:4000/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tier: tier.name.toLowerCase(),
+          walletAddress: address,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
       }
-    }, 2000);
+
+      const { url } = await response.json();
+      
+      // Redirect to Stripe checkout
+      window.location.href = url;
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Payment failed. Please try again.');
+      setIsProcessing(false);
+    }
   };
 
   const handleUpgradeOffer = (accept: boolean) => {

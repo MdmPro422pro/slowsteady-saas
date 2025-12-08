@@ -3,10 +3,16 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth";
 import twoFactorRoutes from "./routes/twoFactor";
+import stripeRoutes from "./routes/stripe";
 
 dotenv.config();
 
 const app = express();
+
+// Stripe webhook needs raw body
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
+// Then use json for other routes
 app.use(cors());
 app.use(express.json());
 
@@ -15,6 +21,9 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 // Auth routes
 app.use("/auth", authRoutes);
 app.use("/auth/2fa", twoFactorRoutes);
+
+// Stripe payment routes
+app.use("/api/stripe", stripeRoutes);
 
 // TODO: Add KYC endpoints, wallet operations, and APIs for your frontend.
 app.get("/", (_req, res) => res.send("Slowsteady backend running"));

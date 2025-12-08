@@ -17,6 +17,8 @@ import ProductsPage from './pages/ProductsPage';
 import GamingPage from './pages/GamingPage';
 import FaucetsPage from './pages/FaucetsPage';
 import CommunityPage from './pages/CommunityPage';
+import MembershipSuccess from './pages/MembershipSuccess';
+import MembershipCancel from './pages/MembershipCancel';
 import ProtectedRoute from './components/ProtectedRoute';
 import { config } from './lib/wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
@@ -53,6 +55,8 @@ export default function App() {
                 <Route path="/gaming" element={<GamingPage />} />
                 <Route path="/faucets" element={<FaucetsPage />} />
                 <Route path="/community" element={<CommunityPage />} />
+                <Route path="/membership/success" element={<MembershipSuccess />} />
+                <Route path="/membership/cancel" element={<MembershipCancel />} />
                 <Route
                   path="/dashboard"
                   element={
