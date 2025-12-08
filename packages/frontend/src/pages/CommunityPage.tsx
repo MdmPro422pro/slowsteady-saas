@@ -4,15 +4,8 @@ import { useAccount } from 'wagmi';
 import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
 import { ChatProfileSetup } from '../components/ChatProfileSetup';
-
-interface Message {
-  id: string;
-  username: string;
-  text: string;
-  timestamp: Date;
-  isOwn?: boolean;
-  room: string;
-}
+import { useChat } from '../hooks/useChat';
+import { useMembership } from '../hooks/useMembership';
 
 interface ChatProfile {
   username: string;
@@ -24,72 +17,42 @@ interface ChatProfile {
 }
 
 const CHAT_ROOMS = [
-  { id: 'general', name: 'Community (General)', icon: '💬' },
-  { id: 'stocks', name: 'Stocks', icon: '📈' },
-  { id: 'crypto', name: 'Crypto', icon: '₿' },
-  { id: 'security', name: 'Security', icon: '🔒' },
-  { id: 'items-to-watch', name: 'Items To Watch', icon: '👀' },
-  { id: 'dwzycoin', name: 'What really is DwzyCoin anyways?', icon: '🪙' },
+  { id: 'General', name: 'Community (General)', icon: '💬' },
+  { id: 'Trading', name: 'Trading', icon: '📈' },
+  { id: 'Tech Support', name: 'Tech Support', icon: '🛠️' },
+  { id: 'NFT Hub', name: 'NFT Hub', icon: '🖼️' },
+  { id: 'DeFi Discussion', name: 'DeFi Discussion', icon: '₿' },
+  { id: 'Community', name: 'Off-Topic', icon: '💬' },
 ];
 
 export default function CommunityPage() {
   const { address, isConnected } = useAccount();
-  const [hasPaid, setHasPaid] = useState(false);
+  const { membership } = useMembership();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
   const [chatProfile, setChatProfile] = useState<ChatProfile | null>(null);
   const [showProfileSetup, setShowProfileSetup] = useState(false);
-  const [currentRoom, setCurrentRoom] = useState('general');
+  const [selectedRoom, setSelectedRoom] = useState('General');
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      username: 'CryptoWhale',
-      text: 'Just launched my token! Check it out on the Business Dashboard 🚀',
-      timestamp: new Date(Date.now() - 300000),
-      room: 'general',
-    },
-    {
-      id: '2',
-      username: 'DiamondHands',
-      text: 'Anyone staking their tokens yet? The APY looks insane!',
-      timestamp: new Date(Date.now() - 240000),
-      room: 'crypto',
-    },
-    {
-      id: '3',
-      username: 'MoonBoy',
-      text: 'When are we adding more games? I need my degen fix 🎰',
-      timestamp: new Date(Date.now() - 180000),
-      room: 'general',
-    },
-    {
-      id: '4',
-      username: 'AdminPro',
-      text: 'New faucet links just dropped! Check the Faucets page 💰',
-      timestamp: new Date(Date.now() - 120000),
-      room: 'general',
-    },
-    {
-      id: '5',
-      username: 'StockGuru',
-      text: 'Tesla hitting new highs! Who else is riding this wave?',
-      timestamp: new Date(Date.now() - 90000),
-      room: 'stocks',
-    },
-    {
-      id: '6',
-      username: 'SecureMax',
-      text: 'Always use hardware wallets! Ledger and Tangem are solid choices.',
-      timestamp: new Date(Date.now() - 60000),
-      room: 'security',
-    },
-  ]);
+  // Initialize chat with username from profile
+  const { 
+    messages, 
+    onlineUsers, 
+    typingUsers,
+    isConnected: isChatConnected, 
+    isAuthenticated,
+    joinRoom,
+    sendMessage,
+    emitTyping,
+    error: chatError,
+  } = useChat(chatProfile?.username || 'Guest');
 
   const [messageInput, setMessageInput] = useState('');
-  const [currentUser] = useState('You');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Check if user has paid membership
+  const hasPaid = membership && (membership as any).paymentStatus === 'paid';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -121,17 +84,20 @@ export default function CommunityPage() {
       return;
     }
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      username: chatProfile?.username || currentUser,
-      text: messageInput,
-      timestamp: new Date(),
-      isOwn: true,
-      room: currentRoom,
-    };
-
-    setMessages([...messages, newMessage]);
+    // Send message via WebSocket
+    sendMessage(messageInput);
     setMessageInput('');
+    emitTyping(false);
+  };
+
+  // Handle typing indicator
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessageInput(e.target.value);
+    if (e.target.value.trim()) {
+      emitTyping(true);
+    } else {
+      emitTyping(false);
+    }
   };
 
   const handlePayment = async () => {
@@ -166,25 +132,26 @@ export default function CommunityPage() {
     }
   };
 
-  // Check payment status on mount
+  // Load chat profile on mount
   useEffect(() => {
     if (isConnected && address) {
-      // Check if user has paid (you'll need to implement this API endpoint)
-      fetch(`/api/check-payment-status?wallet=${address}`)
-        .then(res => res.json())
-        .then(data => setHasPaid(data.hasPaid))
-        .catch(() => setHasPaid(false));
-      
       // Check for existing chat profile
       const savedProfile = localStorage.getItem(`chat_profile_${address}`);
       if (savedProfile) {
         setChatProfile(JSON.parse(savedProfile));
       }
-      // Don't automatically show profile setup - let user explore first
     }
   }, [isConnected, address]);
 
-  const filteredMessages = messages.filter(msg => msg.room === currentRoom);
+  // Join room when authenticated and room selected
+  useEffect(() => {
+    if (isAuthenticated && selectedRoom) {
+      joinRoom(selectedRoom);
+    }
+  }, [isAuthenticated, selectedRoom, joinRoom]);
+
+  // Filter messages for current room (frontend filter as backup)
+  const filteredMessages = messages.filter(msg => msg.room === selectedRoom);
 
   const handleProfileComplete = (profile: Omit<ChatProfile, 'walletAddress'>) => {
     if (!address) return;
@@ -200,15 +167,16 @@ export default function CommunityPage() {
     setShowProfileSetup(false);
   };
 
-  const formatTimestamp = (date: Date) => {
+  const formatTimestamp = (date: Date | string) => {
+    const msgDate = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    const diffMs = now.getTime() - msgDate.getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
-    return date.toLocaleDateString();
+    return msgDate.toLocaleDateString();
   };
 
   return (
@@ -236,9 +204,9 @@ export default function CommunityPage() {
               {CHAT_ROOMS.map((room) => (
                 <button
                   key={room.id}
-                  onClick={() => setCurrentRoom(room.id)}
+                  onClick={() => setSelectedRoom(room.id)}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
-                    currentRoom === room.id
+                    selectedRoom === room.id
                       ? 'bg-clay-soil text-frosted-mint'
                       : 'bg-midnight-violet text-frosted-mint hover:bg-clay-soil hover:bg-opacity-50'
                   }`}
@@ -272,6 +240,22 @@ export default function CommunityPage() {
                     )}
                   </div>
                 </div>
+                
+                {/* Online Users */}
+                {onlineUsers.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-gold font-bold text-xs mb-2">
+                      🟢 Online ({onlineUsers.length})
+                    </h3>
+                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                      {onlineUsers.map(user => (
+                        <div key={user.walletAddress} className="text-frosted-mint text-xs px-2 py-1 bg-midnight-violet rounded">
+                          {user.username}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -281,17 +265,31 @@ export default function CommunityPage() {
             
             {/* Chat Header */}
             <div className="border-b-2 border-clay-soil p-4">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{CHAT_ROOMS.find(r => r.id === currentRoom)?.icon}</span>
-                <div>
-                  <h2 className="text-gold font-bold text-xl">
-                    {CHAT_ROOMS.find(r => r.id === currentRoom)?.name}
-                  </h2>
-                  <p className="text-faded-copper text-sm">
-                    {filteredMessages.length} messages
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{CHAT_ROOMS.find(r => r.id === selectedRoom)?.icon}</span>
+                  <div>
+                    <h2 className="text-gold font-bold text-xl">
+                      {CHAT_ROOMS.find(r => r.id === selectedRoom)?.name}
+                    </h2>
+                    <p className="text-faded-copper text-sm">
+                      {filteredMessages.length} messages
+                      {isChatConnected && isAuthenticated && (
+                        <span className="ml-2">• 🟢 Connected</span>
+                      )}
+                      {!isChatConnected && (
+                        <span className="ml-2">• 🔴 Disconnected</span>
+                      )}
+                    </p>
+                  </div>
                 </div>
               </div>
+              {/* Typing Indicator */}
+              {typingUsers.length > 0 && (
+                <div className="text-faded-copper text-xs mt-2">
+                  {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+                </div>
+              )}
             </div>
 
             {/* Messages Area */}
@@ -313,17 +311,27 @@ export default function CommunityPage() {
                       Messages are blurred. Pay <span className="text-gold font-bold">$5.00</span> to unlock full chat access and start communicating with the community!
                     </p>
                     <div className="space-y-4 mb-6">
-                      {messages.slice(0, 3).map((message) => (
-                        <div key={message.id} className="bg-shadow-grey border-2 border-clay-soil rounded-lg p-3 filter blur-sm">
-                          <div className="flex items-baseline gap-2 mb-1">
-                            <span className="font-bold text-gold text-sm">{message.username}</span>
-                            <span className="text-faded-copper text-xs">
-                              {formatTimestamp(message.timestamp)}
-                            </span>
-                          </div>
-                          <p className="text-sm text-frosted-mint">{message.text}</p>
+                      <div className="bg-shadow-grey border-2 border-clay-soil rounded-lg p-3 filter blur-sm">
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="font-bold text-gold text-sm">CryptoWhale</span>
+                          <span className="text-faded-copper text-xs">5m ago</span>
                         </div>
-                      ))}
+                        <p className="text-sm text-frosted-mint">Just launched my token! Check it out 🚀</p>
+                      </div>
+                      <div className="bg-shadow-grey border-2 border-clay-soil rounded-lg p-3 filter blur-sm">
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="font-bold text-gold text-sm">DiamondHands</span>
+                          <span className="text-faded-copper text-xs">8m ago</span>
+                        </div>
+                        <p className="text-sm text-frosted-mint">Anyone staking their tokens yet?</p>
+                      </div>
+                      <div className="bg-shadow-grey border-2 border-clay-soil rounded-lg p-3 filter blur-sm">
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="font-bold text-gold text-sm">MoonBoy</span>
+                          <span className="text-faded-copper text-xs">12m ago</span>
+                        </div>
+                        <p className="text-sm text-frosted-mint">When are we adding more games?</p>
+                      </div>
                     </div>
                     <button
                       onClick={() => setShowPaymentModal(true)}
@@ -335,30 +343,42 @@ export default function CommunityPage() {
                 </div>
               ) : (
                 <>
-                  {filteredMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[70%] rounded-lg p-3 ${
-                          message.isOwn
-                            ? 'bg-clay-soil text-frosted-mint'
-                            : 'bg-midnight-violet text-frosted-mint border-2 border-faded-copper'
-                        }`}
-                      >
-                        <div className="flex items-baseline gap-2 mb-1">
-                          <span className="font-bold text-gold text-sm">
-                            {message.username}
-                          </span>
-                          <span className="text-faded-copper text-xs">
-                            {formatTimestamp(message.timestamp)}
-                          </span>
-                        </div>
-                        <p className="text-sm break-words">{message.text}</p>
+                  {filteredMessages.length === 0 ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center text-faded-copper">
+                        <p className="text-xl mb-2">💬</p>
+                        <p>No messages yet. Be the first to say hello!</p>
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    filteredMessages.map((message) => {
+                      const isOwn = message.walletAddress === address;
+                      return (
+                        <div
+                          key={message.id}
+                          className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-[70%] rounded-lg p-3 ${
+                              isOwn
+                                ? 'bg-clay-soil text-frosted-mint'
+                                : 'bg-midnight-violet text-frosted-mint border-2 border-faded-copper'
+                            }`}
+                          >
+                            <div className="flex items-baseline gap-2 mb-1">
+                              <span className="font-bold text-gold text-sm">
+                                {message.username}
+                              </span>
+                              <span className="text-faded-copper text-xs">
+                                {formatTimestamp(message.createdAt)}
+                              </span>
+                            </div>
+                            <p className="text-sm break-words">{message.content}</p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                   <div ref={messagesEndRef} />
                 </>
               )}
@@ -370,7 +390,7 @@ export default function CommunityPage() {
                 <input
                   type="text"
                   value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
+                  onChange={handleInputChange}
                   placeholder={
                     !isConnected
                       ? 'Connect wallet to chat...'
@@ -385,7 +405,7 @@ export default function CommunityPage() {
                 />
                 <button
                   type="submit"
-                  disabled={!isConnected || !hasPaid}
+                  disabled={!isConnected || !hasPaid || !isChatConnected}
                   className="bg-clay-soil hover:bg-faded-copper text-frosted-mint font-bold px-6 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Send
@@ -395,11 +415,16 @@ export default function CommunityPage() {
                 {!isConnected
                   ? '🔒 Connect your wallet to unlock chat features'
                   : !hasPaid
-                  ? '💰 Pay $5 to send messages and see full chat history'
+                  ? '💰 Get a membership to send messages and see full chat history'
                   : !chatProfile
                   ? '📝 Create your profile to start sending messages'
-                  : '✅ Premium chat unlocked - enjoy full access!'}
+                  : isChatConnected && isAuthenticated
+                  ? '✅ Connected to chat - enjoy real-time messaging!'
+                  : '🔄 Connecting to chat server...'}
               </p>
+              {chatError && (
+                <p className="text-clay-soil text-xs mt-1">⚠️ {chatError}</p>
+              )}
             </div>
           </div>
         </div>

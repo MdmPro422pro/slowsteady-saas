@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -7,10 +8,12 @@ import authRoutes from "./routes/auth";
 import twoFactorRoutes from "./routes/twoFactor";
 import stripeRoutes from "./routes/stripe";
 import contractsRoutes from "./routes/contracts";
+import { initializeWebSocket } from "./lib/socket";
 
 dotenv.config();
 
 const app = express();
+const httpServer = http.createServer(app);
 
 // Security middleware
 app.use(helmet()); // Sets various HTTP headers for security
@@ -69,7 +72,11 @@ app.use("/api/contracts", contractsRoutes);
 // TODO: Add KYC endpoints, wallet operations, and APIs for your frontend.
 app.get("/", (_req, res) => res.send("Slowsteady backend running"));
 
+// Initialize WebSocket server
+initializeWebSocket(httpServer);
+
 const port = process.env.PORT || 4000;
-app.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`Backend listening on http://localhost:${port}`);
+  console.log(`WebSocket server ready`);
 });
