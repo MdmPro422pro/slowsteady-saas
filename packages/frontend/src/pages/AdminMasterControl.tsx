@@ -3,16 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { Contract } from '../types/contract';
 import { ContractManagementModal } from '../components/ContractManagementModal';
+import { useContracts } from '../hooks/useContracts';
 
 export default function AdminMasterControl() {
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
+  const { contracts: apiContracts, deleteContract: apiDeleteContract, updateContract: apiUpdateContract, refetch: refetchContracts } = useContracts();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [users, setUsers] = useState<any[]>([]);
   const [memberships, setMemberships] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [selectedContractId, setSelectedContractId] = useState<string | undefined>(undefined);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [contractModalMode, setContractModalMode] = useState<'create' | 'edit' | 'view'>('create');
   const [siteSettings, setSiteSettings] = useState({
@@ -21,6 +24,53 @@ export default function AdminMasterControl() {
     chatEnabled: true,
     paymentsEnabled: true,
   });
+
+  // Convert API contracts to frontend Contract type
+  useEffect(() => {
+    const convertedContracts = apiContracts.map(apiContract => {
+      try {
+        // Try to parse the content field as JSON (full contract data)
+        const parsedContent = JSON.parse(apiContract.content);
+        return {
+          ...parsedContent,
+          id: apiContract.id,
+        } as Contract;
+      } catch {
+        // Fallback if content is not valid JSON
+        return {
+          id: apiContract.id,
+          contractName: apiContract.title,
+          clientCompany: apiContract.partyAName || 'Unknown',
+          contractType: apiContract.templateType as any,
+          status: mapStatusToFrontend(apiContract.status),
+          createdDate: new Date(apiContract.createdAt).toISOString(),
+          startDate: new Date(apiContract.createdAt).toISOString(),
+          value: 0,
+          depositPaid: 0,
+          balanceDue: 0,
+          description: apiContract.description,
+          blockchainNetwork: 'Ethereum',
+          authorizedUsers: [],
+          milestones: [],
+          documents: [],
+          notes: '',
+        } as Contract;
+      }
+    });
+    setContracts(convertedContracts);
+  }, [apiContracts]);
+
+  // Map backend status to frontend status
+  const mapStatusToFrontend = (status: string): Contract['status'] => {
+    const statusMap: Record<string, Contract['status']> = {
+      'draft': 'On Hold',
+      'pending': 'Pending',
+      'active': 'Active',
+      'completed': 'Completed',
+      'cancelled': 'Terminated',
+    };
+    return statusMap[status] || 'Pending';
+  };
 
   useEffect(() => {
     // Check admin authentication
@@ -63,7 +113,11 @@ export default function AdminMasterControl() {
 
     // Load contracts
     const storedContracts = localStorage.getItem('contracts') || '[]';
-    setContracts(JSON.parse(storedContracts));
+    const localContracts = JSON.parse(storedContracts);
+    // Merge with API contracts (API contracts take precedence)
+    if (apiContracts.length === 0 && localContracts.length > 0) {
+      setContracts(localContracts);
+    }
   };
 
   const handleLogout = () => {
@@ -104,42 +158,78 @@ export default function AdminMasterControl() {
   };
 
   // Contract management functions
-  const handleSaveContract = (contract: Contract) => {
-    const existingIndex = contracts.findIndex(c => c.id === contract.id);
-    let updatedContracts;
-
-    if (existingIndex >= 0) {
-      updatedContracts = [...contracts];
-      updatedContracts[existingIndex] = contract;
-    } else {
-      updatedContracts = [...contracts, contract];
-    }
-
-    setContracts(updatedContracts);
-    localStorage.setItem('contracts', JSON.stringify(updatedContracts));
+  const handleSaveContract = () => {
+    // Contract is saved via API in the modal, just refresh the list
+    refetchContracts();
+    setIsContractModalOpen(false);
   };
 
   const openContractModal = (mode: 'create' | 'edit' | 'view', contract: Contract | null = null) => {
     setContractModalMode(mode);
     setSelectedContract(contract);
+    // Find the backend contract ID from apiContracts
+    if (contract && mode !== 'create') {
+      const apiContract = apiContracts.find(ac => {
+        try {
+          const parsed = JSON.parse(ac.content);
+          return parsed.id === contract.id;
+        } catch {
+          return false;
+        }
+      });
+      setSelectedContractId(apiContract?.id);
+    } else {
+      setSelectedContractId(undefined);
+    }
     setIsContractModalOpen(true);
   };
 
-  const deleteContract = (contractId: string) => {
+  const deleteContract = async (contractId: string) => {
     if (window.confirm('Are you sure you want to delete this contract?')) {
-      const filtered = contracts.filter(c => c.id !== contractId);
-      setContracts(filtered);
-      localStorage.setItem('contracts', JSON.stringify(filtered));
+      // Find the backend contract ID
+      const contract = contracts.find(c => c.id === contractId);
+      if (contract) {
+        const apiContract = apiContracts.find(ac => {
+          try {
+            const parsed = JSON.parse(ac.content);
+            return parsed.id === contract.id;
+          } catch {
+            return false;
+          }
+        });
+        
+        if (apiContract) {
+          const success = await apiDeleteContract(apiContract.id);
+          if (success) {
+            refetchContracts();
+          }
+        }
+      }
     }
   };
 
-  const terminateContract = (contractId: string) => {
+  const terminateContract = async (contractId: string) => {
     if (window.confirm('Are you sure you want to terminate this contract? This will set status to Terminated.')) {
-      const updated = contracts.map(c =>
-        c.id === contractId ? { ...c, status: 'Terminated' as const, endDate: new Date().toISOString() } : c
-      );
-      setContracts(updated);
-      localStorage.setItem('contracts', JSON.stringify(updated));
+      const contract = contracts.find(c => c.id === contractId);
+      if (contract) {
+        const apiContract = apiContracts.find(ac => {
+          try {
+            const parsed = JSON.parse(ac.content);
+            return parsed.id === contract.id;
+          } catch {
+            return false;
+          }
+        });
+        
+        if (apiContract) {
+          const updatedContract = { ...contract, status: 'Terminated' as const, endDate: new Date().toISOString() };
+          await apiUpdateContract(apiContract.id, {
+            content: JSON.stringify(updatedContract),
+            status: 'cancelled',
+          });
+          refetchContracts();
+        }
+      }
     }
   };
 
@@ -610,6 +700,7 @@ export default function AdminMasterControl() {
         contract={selectedContract}
         onSave={handleSaveContract}
         mode={contractModalMode}
+        contractId={selectedContractId}
       />
     </div>
   );

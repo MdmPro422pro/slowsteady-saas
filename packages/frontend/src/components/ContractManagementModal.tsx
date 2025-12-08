@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Contract, ContractUser, ContractMilestone } from '../types/contract';
+import { useContracts } from '../hooks/useContracts';
 
 interface ContractManagementModalProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface ContractManagementModalProps {
   contract: Contract | null;
   onSave: (contract: Contract) => void;
   mode: 'create' | 'edit' | 'view';
+  contractId?: string; // Backend contract ID for edit mode
 }
 
 export function ContractManagementModal({
@@ -15,7 +17,9 @@ export function ContractManagementModal({
   contract,
   onSave,
   mode,
+  contractId,
 }: ContractManagementModalProps) {
+  const { createContract, updateContract, error: apiError } = useContracts();
   const [formData, setFormData] = useState<Partial<Contract>>(
     contract || {
       contractName: '',
@@ -37,34 +41,111 @@ export function ContractManagementModal({
   const [activeTab, setActiveTab] = useState<'details' | 'users' | 'milestones' | 'documents'>('details');
   const [newUser, setNewUser] = useState<Partial<ContractUser>>({});
   const [newMilestone, setNewMilestone] = useState<Partial<ContractMilestone>>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Update form data when contract prop changes
+  useEffect(() => {
+    if (contract) {
+      setFormData(contract);
+    }
+  }, [contract]);
 
   if (!isOpen) return null;
 
-  const handleSave = () => {
-    const contractToSave: Contract = {
-      id: contract?.id || `contract_${Date.now()}`,
-      contractName: formData.contractName || '',
-      clientCompany: formData.clientCompany || '',
-      contractType: formData.contractType || 'Custom',
-      status: formData.status || 'Pending',
-      createdDate: contract?.createdDate || new Date().toISOString(),
-      startDate: formData.startDate || new Date().toISOString(),
-      endDate: formData.endDate,
-      value: formData.value || 0,
-      depositPaid: formData.depositPaid || 0,
-      balanceDue: (formData.value || 0) - (formData.depositPaid || 0),
-      description: formData.description || '',
-      blockchainNetwork: formData.blockchainNetwork || 'Ethereum',
-      contractAddress: formData.contractAddress,
-      deploymentDate: formData.deploymentDate,
-      authorizedUsers: formData.authorizedUsers || [],
-      milestones: formData.milestones || [],
-      documents: formData.documents || [],
-      notes: formData.notes || '',
-    };
+  const handleSave = async () => {
+    setSaveError(null);
+    setIsSaving(true);
 
-    onSave(contractToSave);
-    onClose();
+    try {
+      const contractToSave: Contract = {
+        id: contract?.id || `contract_${Date.now()}`,
+        contractName: formData.contractName || '',
+        clientCompany: formData.clientCompany || '',
+        contractType: formData.contractType || 'Custom',
+        status: formData.status || 'Pending',
+        createdDate: contract?.createdDate || new Date().toISOString(),
+        startDate: formData.startDate || new Date().toISOString(),
+        endDate: formData.endDate,
+        value: formData.value || 0,
+        depositPaid: formData.depositPaid || 0,
+        balanceDue: (formData.value || 0) - (formData.depositPaid || 0),
+        description: formData.description || '',
+        blockchainNetwork: formData.blockchainNetwork || 'Ethereum',
+        contractAddress: formData.contractAddress,
+        deploymentDate: formData.deploymentDate,
+        authorizedUsers: formData.authorizedUsers || [],
+        milestones: formData.milestones || [],
+        documents: formData.documents || [],
+        notes: formData.notes || '',
+      };
+
+      // Validate required fields
+      if (!contractToSave.contractName.trim()) {
+        setSaveError('Contract name is required');
+        setIsSaving(false);
+        return;
+      }
+
+      if (!contractToSave.clientCompany.trim()) {
+        setSaveError('Client company is required');
+        setIsSaving(false);
+        return;
+      }
+
+      // Call API based on mode
+      if (mode === 'create') {
+        const result = await createContract({
+          title: contractToSave.contractName,
+          description: contractToSave.description,
+          content: JSON.stringify(contractToSave), // Store full contract as JSON
+          templateType: contractToSave.contractType,
+          status: mapStatusToBackend(contractToSave.status),
+          partyAName: contractToSave.clientCompany,
+          partyBName: 'Self', // Current user
+        });
+
+        if (result) {
+          onSave(contractToSave);
+          onClose();
+        } else {
+          setSaveError(apiError || 'Failed to create contract');
+        }
+      } else if (mode === 'edit' && contractId) {
+        const result = await updateContract(contractId, {
+          title: contractToSave.contractName,
+          description: contractToSave.description,
+          content: JSON.stringify(contractToSave),
+          templateType: contractToSave.contractType,
+          status: mapStatusToBackend(contractToSave.status),
+          partyAName: contractToSave.clientCompany,
+        });
+
+        if (result) {
+          onSave(contractToSave);
+          onClose();
+        } else {
+          setSaveError(apiError || 'Failed to update contract');
+        }
+      }
+    } catch (err: any) {
+      setSaveError(err.message || 'An error occurred while saving');
+      console.error('Error saving contract:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Helper function to map status
+  const mapStatusToBackend = (status: string): 'draft' | 'pending' | 'active' | 'completed' | 'cancelled' => {
+    const statusMap: Record<string, 'draft' | 'pending' | 'active' | 'completed' | 'cancelled'> = {
+      'Pending': 'pending',
+      'Active': 'active',
+      'Completed': 'completed',
+      'Terminated': 'cancelled',
+      'On Hold': 'draft',
+    };
+    return statusMap[status] || 'draft';
   };
 
   const addUser = () => {
@@ -609,21 +690,41 @@ export function ContractManagementModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3 justify-end border-t-2 border-faded-copper pt-4">
-          <button
-            onClick={onClose}
-            className="px-6 py-3 rounded-lg bg-shadow-grey text-frosted-mint font-semibold hover:bg-clay-soil transition-colors"
-          >
-            {isReadOnly ? 'Close' : 'Cancel'}
-          </button>
-          {!isReadOnly && (
-            <button
-              onClick={handleSave}
-              className="px-6 py-3 rounded-lg bg-gold text-shadow-grey font-semibold hover:bg-faded-copper transition-colors"
-            >
-              {mode === 'create' ? 'Create Contract' : 'Save Changes'}
-            </button>
+        <div className="border-t-2 border-faded-copper pt-4">
+          {/* Error Display */}
+          {saveError && (
+            <div className="mb-4 p-3 rounded-lg bg-clay-soil border-2 border-faded-copper text-frosted-mint">
+              <div className="font-semibold">❌ Error</div>
+              <div className="text-sm">{saveError}</div>
+            </div>
           )}
+
+          {/* Buttons */}
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={onClose}
+              disabled={isSaving}
+              className="px-6 py-3 rounded-lg bg-shadow-grey text-frosted-mint font-semibold hover:bg-clay-soil transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isReadOnly ? 'Close' : 'Cancel'}
+            </button>
+            {!isReadOnly && (
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-6 py-3 rounded-lg bg-gold text-shadow-grey font-semibold hover:bg-faded-copper transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSaving ? (
+                  <>
+                    <span className="inline-block animate-spin">⏳</span>
+                    Saving...
+                  </>
+                ) : (
+                  <>{mode === 'create' ? 'Create Contract' : 'Save Changes'}</>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
