@@ -5,6 +5,10 @@ export function WalletButton() {
     <ConnectButton
       chainStatus="icon"
       showBalance={true}
+      accountStatus={{
+        smallScreen: 'avatar',
+        largeScreen: 'full',
+      }}
     />
   );
 }
