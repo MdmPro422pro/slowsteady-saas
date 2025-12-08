@@ -4,6 +4,7 @@ import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
 import { MembershipPurchaseModal } from '../components/MembershipPurchaseModal';
 import { AdminLoginModal } from '../components/AdminLoginModal';
+import { useMembership } from '../hooks/useMembership';
 import logoVideo from '../assets/logo.mp4';
 
 const MEMBERSHIP_TIERS = [
@@ -14,22 +15,17 @@ const MEMBERSHIP_TIERS = [
 
 export default function Landing() {
   const [selectedTier, setSelectedTier] = useState<typeof MEMBERSHIP_TIERS[0] | null>(null);
-  const [currentTier, setCurrentTier] = useState<typeof MEMBERSHIP_TIERS[0] | null>(null);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [adminClickCount, setAdminClickCount] = useState(0);
+  
+  // Fetch membership from database
+  const { membership, loading: membershipLoading } = useMembership();
+  
+  // Convert database membership to tier format
+  const currentTier = membership ? MEMBERSHIP_TIERS.find(t => t.level === membership.level) : null;
 
   useEffect(() => {
-    // Load current membership tier from localStorage
-    const stored = localStorage.getItem('membershipTier');
-    if (stored) {
-      try {
-        setCurrentTier(JSON.parse(stored));
-      } catch (e) {
-        console.error('Error loading membership tier:', e);
-      }
-    }
-
     // Check for upgrade hash in URL
     const hash = window.location.hash;
     if (hash.startsWith('#upgrade-')) {

@@ -1,5 +1,6 @@
 import express from 'express';
 import Stripe from 'stripe';
+import prisma from '../lib/prisma';
 
 const router = express.Router();
 
@@ -67,19 +68,50 @@ router.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// Verify payment session
+// Verify payment session and return membership data from database
 router.get('/verify-session/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
 
+    // Check database first
+    const membership = await prisma.membership.findUnique({
+      where: { stripeSessionId: sessionId },
+    });
+
+    if (membership) {
+      return res.json({
+        success: true,
+        tier: membership.tier,
+        level: membership.level,
+        walletAddress: membership.walletAddress,
+        paymentStatus: membership.paymentStatus,
+      });
+    }
+
+    // If not in DB, check Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status === 'paid') {
+      // Create membership in database
+      const newMembership = await prisma.membership.create({
+        data: {
+          walletAddress: session.metadata?.walletAddress || 'unknown',
+          tier: session.metadata?.tier || 'basic',
+          level: parseInt(session.metadata?.level || '1'),
+          stripeSessionId: session.id,
+          stripeCustomerId: session.customer as string | null,
+          amount: session.amount_total || 0,
+          currency: session.currency || 'usd',
+          paymentStatus: 'paid',
+        },
+      });
+
       res.json({
         success: true,
-        tier: session.metadata?.tier,
-        level: session.metadata?.level,
-        walletAddress: session.metadata?.walletAddress,
+        tier: newMembership.tier,
+        level: newMembership.level,
+        walletAddress: newMembership.walletAddress,
+        paymentStatus: newMembership.paymentStatus,
       });
     } else {
       res.json({
@@ -89,6 +121,43 @@ router.get('/verify-session/:sessionId', async (req, res) => {
     }
   } catch (error: any) {
     console.error('Session verification error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get membership by wallet address
+router.get('/membership/:walletAddress', async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+
+    const membership = await prisma.membership.findFirst({
+      where: {
+        walletAddress,
+        paymentStatus: 'paid',
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (membership) {
+      res.json({
+        success: true,
+        membership: {
+          tier: membership.tier,
+          level: membership.level,
+          createdAt: membership.createdAt,
+          expiresAt: membership.expiresAt,
+        },
+      });
+    } else {
+      res.json({
+        success: false,
+        message: 'No active membership found',
+      });
+    }
+  } catch (error: any) {
+    console.error('Membership lookup error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -116,16 +185,29 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           walletAddress: session.metadata?.walletAddress,
         });
 
-        // TODO: Store membership in database
-        // await prisma.membership.create({
-        //   data: {
-        //     walletAddress: session.metadata?.walletAddress,
-        //     tier: session.metadata?.tier,
-        //     level: parseInt(session.metadata?.level || '1'),
-        //     stripeSessionId: session.id,
-        //     paymentStatus: 'paid',
-        //   },
-        // });
+        // Store membership in database
+        try {
+          await prisma.membership.upsert({
+            where: { stripeSessionId: session.id },
+            update: {
+              paymentStatus: 'paid',
+              stripeCustomerId: session.customer as string | null,
+            },
+            create: {
+              walletAddress: session.metadata?.walletAddress || 'unknown',
+              tier: session.metadata?.tier || 'basic',
+              level: parseInt(session.metadata?.level || '1'),
+              stripeSessionId: session.id,
+              stripeCustomerId: session.customer as string | null,
+              amount: session.amount_total || 0,
+              currency: session.currency || 'usd',
+              paymentStatus: 'paid',
+            },
+          });
+          console.log('Membership saved to database');
+        } catch (dbError) {
+          console.error('Database error saving membership:', dbError);
+        }
 
         break;
       }
