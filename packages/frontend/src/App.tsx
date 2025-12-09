@@ -14,6 +14,7 @@ import BusinessDashboard from './pages/BusinessDashboard';
 import PersonalDashboard from './pages/PersonalDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminMasterControl from './pages/AdminMasterControl';
+import AdminPanel from './pages/AdminPanel';
 import ProductsPage from './pages/ProductsPage';
 import GamingPage from './pages/GamingPage';
 import FaucetsPage from './pages/FaucetsPage';
@@ -63,6 +64,7 @@ export default function App() {
                 <Route path="/personal" element={<PersonalDashboard />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin-master" element={<AdminMasterControl />} />
+                <Route path="/admin-panel" element={<AdminPanel />} />
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/gaming" element={<GamingPage />} />
                 <Route path="/faucets" element={<FaucetsPage />} />

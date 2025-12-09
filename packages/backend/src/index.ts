@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth";
 import twoFactorRoutes from "./routes/twoFactor";
 import stripeRoutes from "./routes/stripe";
 import contractsRoutes from "./routes/contracts";
+import adminRoutes from "./routes/admin";
 import { initializeWebSocket } from "./lib/socket";
 
 dotenv.config();
@@ -68,6 +69,9 @@ app.use("/api/stripe", stripeRoutes);
 
 // Contract management routes
 app.use("/api/contracts", contractsRoutes);
+
+// Admin routes (protected with admin middleware)
+app.use("/api/admin", adminRoutes);
 
 // TODO: Add KYC endpoints, wallet operations, and APIs for your frontend.
 app.get("/", (_req, res) => res.send("Slowsteady backend running"));

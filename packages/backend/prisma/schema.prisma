@@ -26,6 +26,9 @@ model User {
   twoFactorEnabled  Boolean      @default(false)
   twoFactorSecret   String?      // Base32 encoded secret for TOTP
   
+  // Admin role
+  isAdmin           Boolean      @default(false)
+  
   // Metadata
   emailVerified     Boolean      @default(false)
   createdAt         DateTime     @default(now())
