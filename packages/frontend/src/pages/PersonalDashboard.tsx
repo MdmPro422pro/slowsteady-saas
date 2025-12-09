@@ -5,7 +5,6 @@ import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
 import { useBlockchainData } from '../hooks/useBlockchainData';
 import { SkeletonBalance, SkeletonTable } from '../components/Skeleton';
-import { SkeletonBalance, SkeletonTable } from '../components/Skeleton';
 
 export default function PersonalDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
