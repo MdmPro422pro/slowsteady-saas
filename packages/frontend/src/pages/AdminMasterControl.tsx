@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
+import { toast } from '../lib/toast';
 import { Contract } from '../types/contract';
 import { ContractManagementModal } from '../components/ContractManagementModal';
 import { useContracts } from '../hooks/useContracts';
@@ -151,7 +152,7 @@ export default function AdminMasterControl() {
       if (window.confirm('This action CANNOT be undone. Type "DELETE" to confirm.')) {
         localStorage.clear();
         sessionStorage.clear();
-        alert('All data cleared. You will be logged out.');
+        toast.success('Data Cleared', 'All data cleared. You will be logged out.');
         navigate('/');
       }
     }

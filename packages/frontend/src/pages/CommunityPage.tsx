@@ -6,6 +6,8 @@ import { DashboardPanel } from '../components/DashboardPanel';
 import { ChatProfileSetup } from '../components/ChatProfileSetup';
 import { useChat } from '../hooks/useChat';
 import { useMembership } from '../hooks/useMembership';
+import { SkeletonMessage } from '../components/Skeleton';
+import { toast } from '../lib/toast';
 
 interface ChatProfile {
   username: string;
@@ -68,7 +70,7 @@ export default function CommunityPage() {
 
     // Check if wallet is connected
     if (!isConnected) {
-      alert('Please connect your wallet to send messages');
+      toast.warning('Wallet Required', 'Please connect your wallet to send messages');
       return;
     }
 
@@ -122,11 +124,11 @@ export default function CommunityPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert('Payment session creation failed. Please try again.');
+        toast.error('Payment Failed', 'Payment session creation failed. Please try again.');
       }
     } catch (error) {
       console.error('Payment error:', error);
-      alert('Payment failed. Please try again.');
+      toast.error('Payment Failed', 'Payment failed. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -343,7 +345,14 @@ export default function CommunityPage() {
                 </div>
               ) : (
                 <>
-                  {filteredMessages.length === 0 ? (
+                  {!isAuthenticated ? (
+                    <div className="space-y-3">
+                      <SkeletonMessage />
+                      <SkeletonMessage />
+                      <SkeletonMessage />
+                      <SkeletonMessage />
+                    </div>
+                  ) : filteredMessages.length === 0 ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center text-faded-copper">
                         <p className="text-xl mb-2">💬</p>

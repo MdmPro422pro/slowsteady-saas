@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
+import { toast } from '../lib/toast';
 
 interface Membership {
   tier: string;
@@ -40,10 +41,11 @@ export function useMembership(): UseMembershipReturn {
       } else {
         setMembership(null);
       }
-    } catch (err) {
-      console.error('Error fetching membership:', err);
-      setError('Failed to load membership');
+    } catch (err: any) {
+      const errorMsg = err.message || 'Failed to load membership';
+      setError(errorMsg);
       setMembership(null);
+      toast.error('Membership Error', errorMsg);
     } finally {
       setLoading(false);
     }

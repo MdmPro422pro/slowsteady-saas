@@ -4,6 +4,8 @@ import { useAccount } from 'wagmi';
 import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
 import { useBlockchainData } from '../hooks/useBlockchainData';
+import { SkeletonBalance, SkeletonTable } from '../components/Skeleton';
+import { SkeletonBalance, SkeletonTable } from '../components/Skeleton';
 
 export default function PersonalDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -205,10 +207,7 @@ export default function PersonalDashboard() {
                   </div>
                   
                   {isLoadingBalance ? (
-                    <div className="text-center py-8">
-                      <div className="inline-block animate-spin text-gold text-4xl">⏳</div>
-                      <p className="text-faded-copper mt-2">Loading balance...</p>
-                    </div>
+                    <SkeletonBalance />
                   ) : balance ? (
                     <div>
                       <div className="text-center p-6 bg-midnight-violet rounded-lg mb-4">
@@ -343,10 +342,7 @@ export default function PersonalDashboard() {
                   <p className="text-faded-copper">Connect to view your transaction history</p>
                 </div>
               ) : isLoadingTxs ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin text-gold text-4xl">⏳</div>
-                  <p className="text-faded-copper mt-2">Loading transactions...</p>
-                </div>
+                <SkeletonTable rows={5} />
               ) : transactions.length === 0 ? (
                 <div className="text-center py-8 bg-midnight-violet rounded-lg">
                   <p className="text-faded-copper">No recent transactions found in the last 10 blocks</p>
@@ -389,6 +385,16 @@ export default function PersonalDashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Preferences Tab */}
+        {activeTab === 'preferences' && (
+          <div>
+            <p className="text-faded-copper">Preferences coming soon...</p>
+          </div>
+        )}
       </main>
     </div>
   );

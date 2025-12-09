@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -42,6 +43,17 @@ export default function App() {
         >
           <BrowserRouter>
             <AuthProvider>
+              <Toaster 
+                position="top-right" 
+                theme="dark"
+                toastOptions={{
+                  style: {
+                    background: '#1a1f2e',
+                    border: '1px solid rgba(218, 165, 32, 0.3)',
+                    color: '#e8e6e3',
+                  },
+                }}
+              />
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<LoginPage />} />

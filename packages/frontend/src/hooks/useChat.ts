@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAccount } from 'wagmi';
 import { io, Socket } from 'socket.io-client';
+import { toast } from '../lib/toast';
 
 const SOCKET_URL = 'http://localhost:4000';
 
@@ -45,28 +46,28 @@ export function useChat(username: string) {
 
     // Connection events
     newSocket.on('connect', () => {
-      console.log('Socket connected');
       setIsConnected(true);
       setError(null);
+      toast.success('Connected', 'Chat connected successfully');
       
       // Authenticate with wallet and username
       newSocket.emit('authenticate', { walletAddress: address, username });
     });
 
     newSocket.on('disconnect', () => {
-      console.log('Socket disconnected');
       setIsConnected(false);
       setIsAuthenticated(false);
+      toast.info('Disconnected', 'Chat connection lost');
     });
 
     newSocket.on('authenticated', ({ rooms }) => {
-      console.log('Authenticated successfully', rooms);
       setIsAuthenticated(true);
+      toast.success('Authenticated', 'Ready to chat');
     });
 
     newSocket.on('error', ({ message }) => {
-      console.error('Socket error:', message);
       setError(message);
+      toast.error('Chat Error', message);
     });
 
     // Cleanup on unmount
@@ -78,11 +79,10 @@ export function useChat(username: string) {
   // Join room
   const joinRoom = useCallback((room: string) => {
     if (!socket || !isAuthenticated) {
-      console.warn('Cannot join room: not authenticated');
+      toast.warning('Cannot join room', 'Please wait for authentication');
       return;
     }
 
-    console.log('Joining room:', room);
     socket.emit('join_room', { room });
     setCurrentRoom(room);
     setMessages([]); // Clear messages when switching rooms

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
+import { toast } from '../lib/toast';
 
 // Map frontend Contract type to backend API format
 export interface ApiContract {
@@ -79,8 +80,9 @@ export function useContracts() {
       const data = await response.json();
       setContracts(data);
     } catch (err: any) {
-      setError(err.message || 'Failed to load contracts');
-      console.error('Error fetching contracts:', err);
+      const errorMsg = err.message || 'Failed to load contracts';
+      setError(errorMsg);
+      toast.error('Failed to load contracts', errorMsg);
     } finally {
       setLoading(false);
     }
@@ -99,7 +101,9 @@ export function useContracts() {
     partyBWallet?: string;
   }): Promise<ApiContract | null> => {
     if (!address) {
-      setError('Wallet not connected');
+      const errorMsg = 'Wallet not connected';
+      setError(errorMsg);
+      toast.error('Cannot create contract', errorMsg);
       return null;
     }
 
@@ -107,29 +111,39 @@ export function useContracts() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contracts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-wallet-address': address,
-        },
-        body: JSON.stringify(contractData),
+      const promise = (async () => {
+        const response = await fetch(`${API_BASE_URL}/api/contracts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-wallet-address': address,
+          },
+          body: JSON.stringify(contractData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to create contract: ${response.statusText}`);
+        }
+
+        const newContract = await response.json();
+        setContracts([...contracts, newContract]);
+        return newContract;
+      })();
+
+      toast.promise(promise, {
+        loading: 'Creating contract...',
+        success: 'Contract created successfully',
+        error: (err) => err.message || 'Failed to create contract',
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to create contract: ${response.statusText}`);
-      }
-
-      const newContract = await response.json();
-      setContracts([...contracts, newContract]);
-      return newContract;
+      const result = await promise;
+      setLoading(false);
+      return result;
     } catch (err: any) {
       setError(err.message || 'Failed to create contract');
-      console.error('Error creating contract:', err);
-      return null;
-    } finally {
       setLoading(false);
+      return null;
     }
   };
 
@@ -151,7 +165,9 @@ export function useContracts() {
     }>
   ): Promise<ApiContract | null> => {
     if (!address) {
-      setError('Wallet not connected');
+      const errorMsg = 'Wallet not connected';
+      setError(errorMsg);
+      toast.error('Cannot update contract', errorMsg);
       return null;
     }
 
@@ -159,36 +175,48 @@ export function useContracts() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contracts/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-wallet-address': address,
-        },
-        body: JSON.stringify(updates),
+      const promise = (async () => {
+        const response = await fetch(`${API_BASE_URL}/api/contracts/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-wallet-address': address,
+          },
+          body: JSON.stringify(updates),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to update contract: ${response.statusText}`);
+        }
+
+        const updatedContract = await response.json();
+        setContracts(contracts.map(c => (c.id === id ? updatedContract : c)));
+        return updatedContract;
+      })();
+
+      toast.promise(promise, {
+        loading: 'Updating contract...',
+        success: 'Contract updated successfully',
+        error: (err) => err.message || 'Failed to update contract',
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to update contract: ${response.statusText}`);
-      }
-
-      const updatedContract = await response.json();
-      setContracts(contracts.map(c => (c.id === id ? updatedContract : c)));
-      return updatedContract;
+      const result = await promise;
+      setLoading(false);
+      return result;
     } catch (err: any) {
       setError(err.message || 'Failed to update contract');
-      console.error('Error updating contract:', err);
-      return null;
-    } finally {
       setLoading(false);
+      return null;
     }
   };
 
   // Delete contract
   const deleteContract = async (id: string): Promise<boolean> => {
     if (!address) {
-      setError('Wallet not connected');
+      const errorMsg = 'Wallet not connected';
+      setError(errorMsg);
+      toast.error('Cannot delete contract', errorMsg);
       return false;
     }
 
@@ -196,26 +224,36 @@ export function useContracts() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contracts/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'x-wallet-address': address,
-        },
+      const promise = (async () => {
+        const response = await fetch(`${API_BASE_URL}/api/contracts/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'x-wallet-address': address,
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to delete contract: ${response.statusText}`);
+        }
+
+        setContracts(contracts.filter(c => c.id !== id));
+        return true;
+      })();
+
+      toast.promise(promise, {
+        loading: 'Deleting contract...',
+        success: 'Contract deleted successfully',
+        error: (err) => err.message || 'Failed to delete contract',
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to delete contract: ${response.statusText}`);
-      }
-
-      setContracts(contracts.filter(c => c.id !== id));
-      return true;
+      const result = await promise;
+      setLoading(false);
+      return result;
     } catch (err: any) {
       setError(err.message || 'Failed to delete contract');
-      console.error('Error deleting contract:', err);
-      return false;
-    } finally {
       setLoading(false);
+      return false;
     }
   };
 

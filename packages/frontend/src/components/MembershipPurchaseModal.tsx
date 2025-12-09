@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
+import { toast } from '../lib/toast';
 
 interface MembershipPurchaseModalProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ export function MembershipPurchaseModal({
 
   const handlePurchase = async () => {
     if (!isConnected) {
-      alert('Please connect your wallet first');
+      toast.warning('Wallet Required', 'Please connect your wallet first');
       return;
     }
 
@@ -71,7 +72,7 @@ export function MembershipPurchaseModal({
       window.location.href = url;
     } catch (error) {
       console.error('Payment error:', error);
-      alert('Payment failed. Please try again.');
+      toast.error('Payment Failed', 'Payment failed. Please try again.');
       setIsProcessing(false);
     }
   };

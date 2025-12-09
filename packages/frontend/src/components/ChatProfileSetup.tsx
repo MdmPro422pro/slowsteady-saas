@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from '../lib/toast';
 
 interface ChatProfileSetupProps {
   onComplete: (profile: {
@@ -32,7 +33,7 @@ export function ChatProfileSetup({ onComplete, onClose }: ChatProfileSetupProps)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) {
-      alert('Username is required');
+      toast.warning('Username Required', 'Please enter a username to continue');
       return;
     }
 
