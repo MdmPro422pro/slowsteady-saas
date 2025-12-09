@@ -1,10 +1,22 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAccount } from 'wagmi';
 import { WalletButton } from '../components/WalletButton';
 import { DashboardPanel } from '../components/DashboardPanel';
+import { useBlockchainData } from '../hooks/useBlockchainData';
 
 export default function PersonalDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const { isConnected } = useAccount();
+  const { 
+    balance, 
+    transactions, 
+    totalUsdValue,
+    isLoadingBalance, 
+    isLoadingTxs,
+    chain,
+    address 
+  } = useBlockchainData();
 
   return (
     <div className="min-h-screen bg-midnight-violet">
@@ -174,27 +186,55 @@ export default function PersonalDashboard() {
           <div>
             <h1 className="text-4xl font-bold text-gold mb-8">Wallet Management</h1>
             
-            {/* Wallet Balance */}
-            <div className="bg-shadow-grey border-2 border-faded-copper rounded-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gold mb-4">Your Balance</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center p-4 bg-midnight-violet rounded-lg">
-                  <p className="text-faded-copper text-sm mb-2">MATIC</p>
-                  <p className="text-3xl font-bold text-frosted-mint">125.50</p>
-                  <p className="text-faded-copper text-xs mt-1">≈ $82.50 USD</p>
-                </div>
-                <div className="text-center p-4 bg-midnight-violet rounded-lg">
-                  <p className="text-faded-copper text-sm mb-2">ETH</p>
-                  <p className="text-3xl font-bold text-frosted-mint">0.45</p>
-                  <p className="text-faded-copper text-xs mt-1">≈ $1,125.00 USD</p>
-                </div>
-                <div className="text-center p-4 bg-midnight-violet rounded-lg">
-                  <p className="text-faded-copper text-sm mb-2">USDC</p>
-                  <p className="text-3xl font-bold text-frosted-mint">500.00</p>
-                  <p className="text-faded-copper text-xs mt-1">≈ $500.00 USD</p>
-                </div>
+            {!isConnected ? (
+              <div className="bg-shadow-grey border-2 border-faded-copper rounded-lg p-8 text-center">
+                <p className="text-gold font-bold text-xl mb-2">🔗 Connect Your Wallet</p>
+                <p className="text-frosted-mint">Connect your wallet to view your balance and manage tokens</p>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Wallet Balance */}
+                <div className="bg-shadow-grey border-2 border-faded-copper rounded-lg p-6 mb-8">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gold">Your Balance</h2>
+                    {chain && (
+                      <span className="text-frosted-mint text-sm bg-midnight-violet px-3 py-1 rounded-lg">
+                        {chain.name}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {isLoadingBalance ? (
+                    <div className="text-center py-8">
+                      <div className="inline-block animate-spin text-gold text-4xl">⏳</div>
+                      <p className="text-faded-copper mt-2">Loading balance...</p>
+                    </div>
+                  ) : balance ? (
+                    <div>
+                      <div className="text-center p-6 bg-midnight-violet rounded-lg mb-4">
+                        <p className="text-faded-copper text-sm mb-2">{balance.symbol}</p>
+                        <p className="text-4xl font-bold text-frosted-mint">{parseFloat(balance.value).toFixed(4)}</p>
+                        <p className="text-faded-copper text-sm mt-2">≈ ${balance.usdValue.toFixed(2)} USD</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-center text-sm">
+                        <div className="bg-midnight-violet p-3 rounded-lg">
+                          <p className="text-faded-copper mb-1">Network</p>
+                          <p className="text-frosted-mint font-semibold">{chain?.name || 'Unknown'}</p>
+                        </div>
+                        <div className="bg-midnight-violet p-3 rounded-lg">
+                          <p className="text-faded-copper mb-1">Address</p>
+                          <p className="text-frosted-mint font-mono text-xs">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-faded-copper">
+                      <p>No balance data available</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             {/* Send/Receive */}
             <div className="grid md:grid-cols-2 gap-6">
@@ -288,42 +328,67 @@ export default function PersonalDashboard() {
 
             {/* Transaction List */}
             <div className="bg-shadow-grey border-2 border-faded-copper rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-gold mb-4">Recent Transactions</h2>
-              <div className="space-y-3">
-                {[
-                  { type: 'Send', amount: '-100 MATIC', to: '0x742d...bEb', time: '2 hours ago', status: 'Confirmed' },
-                  { type: 'Receive', amount: '+50 USDC', to: 'From 0x123...abc', time: '1 day ago', status: 'Confirmed' },
-                  { type: 'Contract', amount: '-0.05 ETH', to: 'Deploy ERC-20', time: '3 days ago', status: 'Confirmed' },
-                  { type: 'Send', amount: '-25 MATIC', to: '0x456...def', time: '5 days ago', status: 'Confirmed' },
-                ].map((tx, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-4 bg-midnight-violet border border-faded-copper rounded-lg">
-                    <div className="flex gap-6">
-                      <div>
-                        <span className={`px-3 py-1 rounded-full text-xs ${
-                          tx.type === 'Receive' ? 'bg-frosted-mint text-midnight-violet' : 'bg-clay-soil text-frosted-mint'
-                        }`}>
-                          {tx.type}
-                        </span>
-                      </div>
-                      <div>
-                        <p className={`font-bold ${
-                          tx.amount.startsWith('+') ? 'text-frosted-mint' : 'text-faded-copper'
-                        }`}>
-                          {tx.amount}
-                        </p>
-                        <p className="text-faded-copper text-sm">{tx.to}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-faded-copper text-sm">{tx.time}</p>
-                      <p className="text-frosted-mint text-xs">{tx.status}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gold">Recent Transactions</h2>
+                {chain && (
+                  <span className="text-frosted-mint text-sm bg-midnight-violet px-3 py-1 rounded-lg">
+                    {chain.name}
+                  </span>
+                )}
               </div>
-            </div>
-          </div>
-        )}
+              
+              {!isConnected ? (
+                <div className="text-center py-8 bg-midnight-violet rounded-lg">
+                  <p className="text-gold font-bold text-lg mb-2">🔗 Connect Your Wallet</p>
+                  <p className="text-faded-copper">Connect to view your transaction history</p>
+                </div>
+              ) : isLoadingTxs ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin text-gold text-4xl">⏳</div>
+                  <p className="text-faded-copper mt-2">Loading transactions...</p>
+                </div>
+              ) : transactions.length === 0 ? (
+                <div className="text-center py-8 bg-midnight-violet rounded-lg">
+                  <p className="text-faded-copper">No recent transactions found in the last 10 blocks</p>
+                  <p className="text-faded-copper text-sm mt-2">Transactions will appear here once you make some</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {transactions.map((tx) => (
+                    <div key={tx.hash} className="flex justify-between items-center p-4 bg-midnight-violet border border-faded-copper rounded-lg">
+                      <div className="flex gap-6 flex-1">
+                        <div>
+                          <span className={`px-3 py-1 rounded-full text-xs capitalize ${
+                            tx.type === 'receive' ? 'bg-frosted-mint text-midnight-violet' : 'bg-clay-soil text-frosted-mint'
+                          }`}>
+                            {tx.type}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-bold ${
+                            tx.formattedAmount.startsWith('+') ? 'text-frosted-mint' : 'text-faded-copper'
+                          }`}>
+                            {tx.formattedAmount}
+                          </p>
+                          <p className="text-faded-copper text-sm font-mono">{tx.shortTo}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-faded-copper text-sm">{tx.timeAgo}</p>
+                        <p className="text-frosted-mint text-xs capitalize">{tx.status}</p>
+                        <a 
+                          href={`${chain?.blockExplorers?.default.url}/tx/${tx.hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gold hover:text-frosted-mint text-xs mt-1 inline-block"
+                        >
+                          View →
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
       </main>
     </div>
   );
