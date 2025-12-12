@@ -154,7 +154,7 @@ export default function Landing() {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* ERC-20 */}
-            <button className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper">
+            <Link to="/business" className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper block">
               <h3 className="text-2xl font-bold text-gold mb-2">ERC-20</h3>
               <p className="text-sm text-faded-copper mb-3">Fungible Tokens</p>
               <p className="text-frosted-mint mb-4 text-sm">Identical units like stablecoins. Simple transfer and balance functions.</p>
@@ -162,10 +162,10 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$500 - $3,000</span>
                 <span className="text-xs bg-clay-soil px-3 py-1 rounded-full text-frosted-mint">Low Complexity</span>
               </div>
-            </button>
+            </Link>
 
             {/* ERC-721 */}
-            <button className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper">
+            <Link to="/business" className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper block">
               <h3 className="text-2xl font-bold text-gold mb-2">ERC-721</h3>
               <p className="text-sm text-faded-copper mb-3">Non-Fungible Tokens (NFTs)</p>
               <p className="text-frosted-mint mb-4 text-sm">Unique digital assets with metadata and marketplace integration.</p>
@@ -173,10 +173,10 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$3,000 - $10,000</span>
                 <span className="text-xs bg-faded-copper px-3 py-1 rounded-full text-frosted-mint">Medium</span>
               </div>
-            </button>
+            </Link>
 
             {/* ERC-1155 */}
-            <button className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper">
+            <Link to="/business" className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper block">
               <h3 className="text-2xl font-bold text-gold mb-2">ERC-1155</h3>
               <p className="text-sm text-faded-copper mb-3">Multi-Token Standard</p>
               <p className="text-frosted-mint mb-4 text-sm">Fungible + non-fungible in one. Perfect for gaming and marketplaces.</p>
@@ -184,10 +184,10 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$5,000 - $15,000</span>
                 <span className="text-xs bg-clay-soil px-3 py-1 rounded-full text-frosted-mint">High Complexity</span>
               </div>
-            </button>
+            </Link>
 
             {/* ERC-777 */}
-            <button className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper">
+            <Link to="/business" className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper block">
               <h3 className="text-2xl font-bold text-gold mb-2">ERC-777</h3>
               <p className="text-sm text-faded-copper mb-3">Advanced Fungible Tokens</p>
               <p className="text-frosted-mint mb-4 text-sm">Custom logic with hooks. More flexible but requires security audits.</p>
@@ -195,10 +195,10 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$5,000 - $12,000</span>
                 <span className="text-xs bg-faded-copper px-3 py-1 rounded-full text-frosted-mint">Medium-High</span>
               </div>
-            </button>
+            </Link>
 
             {/* ERC-998 */}
-            <button className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper">
+            <Link to="/business" className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper block">
               <h3 className="text-2xl font-bold text-gold mb-2">ERC-998</h3>
               <p className="text-sm text-faded-copper mb-3">Composable NFTs</p>
               <p className="text-frosted-mint mb-4 text-sm">NFTs owning other NFTs. Complex hierarchies for metaverse/gaming.</p>
@@ -206,10 +206,10 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$8,000 - $20,000</span>
                 <span className="text-xs bg-clay-soil px-3 py-1 rounded-full text-frosted-mint">High Complexity</span>
               </div>
-            </button>
+            </Link>
 
             {/* ERC-223 */}
-            <button className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper">
+            <Link to="/business" className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper block">
               <h3 className="text-2xl font-bold text-gold mb-2">ERC-223</h3>
               <p className="text-sm text-faded-copper mb-3">Safer Fungible Tokens</p>
               <p className="text-frosted-mint mb-4 text-sm">Prevents accidental loss with recipient-side handling.</p>
@@ -217,10 +217,10 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$2,000 - $6,000</span>
                 <span className="text-xs bg-faded-copper px-3 py-1 rounded-full text-frosted-mint">Low-Medium</span>
               </div>
-            </button>
+            </Link>
 
             {/* ERC-827 */}
-            <button className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper">
+            <Link to="/business" className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper block">
               <h3 className="text-2xl font-bold text-gold mb-2">ERC-827</h3>
               <p className="text-sm text-faded-copper mb-3">ERC-20 Extension</p>
               <p className="text-frosted-mint mb-4 text-sm">TransferAndCall functions for executing logic during transfers.</p>
@@ -228,10 +228,10 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$3,000 - $7,000</span>
                 <span className="text-xs bg-faded-copper px-3 py-1 rounded-full text-frosted-mint">Medium</span>
               </div>
-            </button>
+            </Link>
 
             {/* ERC-865 */}
-            <button className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper">
+            <Link to="/business" className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper block">
               <h3 className="text-2xl font-bold text-gold mb-2">ERC-865</h3>
               <p className="text-sm text-faded-copper mb-3">Gas Fee Delegation</p>
               <p className="text-frosted-mint mb-4 text-sm">Pay gas fees in tokens instead of ETH. Better user experience.</p>
@@ -239,10 +239,10 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$4,000 - $8,000</span>
                 <span className="text-xs bg-faded-copper px-3 py-1 rounded-full text-frosted-mint">Medium</span>
               </div>
-            </button>
+            </Link>
 
             {/* ERC-1132 */}
-            <button className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper">
+            <Link to="/business" className="p-6 rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 text-left border-2 border-faded-copper block">
               <h3 className="text-2xl font-bold text-gold mb-2">ERC-1132</h3>
               <p className="text-sm text-faded-copper mb-3">Token Locking</p>
               <p className="text-frosted-mint mb-4 text-sm">Time-based restrictions for vesting schedules and governance.</p>
@@ -250,10 +250,10 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$3,000 - $7,000</span>
                 <span className="text-xs bg-faded-copper px-3 py-1 rounded-full text-frosted-mint">Medium</span>
               </div>
-            </button>
+            </Link>
 
             {/* Custom Contracts */}
-            <button className="p-6 rounded-lg bg-clay-soil hover:bg-faded-copper transition-all duration-300 text-left border-2 border-gold">
+            <Link to="/business" className="p-6 rounded-lg bg-clay-soil hover:bg-faded-copper transition-all duration-300 text-left border-2 border-gold block">
               <h3 className="text-2xl font-bold text-gold mb-2">Custom Contract</h3>
               <p className="text-sm text-gold mb-3">Bespoke Solutions</p>
               <p className="text-frosted-mint mb-4 text-sm">Tailored logic for DeFi, DAOs, marketplaces. Full customization.</p>
@@ -261,7 +261,7 @@ export default function Landing() {
                 <span className="text-gold font-semibold">$10,000 - $50,000+</span>
                 <span className="text-xs bg-gold px-3 py-1 rounded-full text-shadow-grey font-semibold">Very High</span>
               </div>
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -357,7 +357,7 @@ export default function Landing() {
           
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Game 1 */}
-            <div className="rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+            <Link to="/gaming" className="rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
               <div className="relative w-full h-48 bg-midnight-violet overflow-hidden flex items-center justify-center">
                 <div className="text-6xl">🎮</div>
               </div>
@@ -368,10 +368,10 @@ export default function Landing() {
                 </div>
                 <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Play Now →</span>
               </div>
-            </div>
+            </Link>
 
             {/* Game 2 */}
-            <div className="rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+            <Link to="/gaming" className="rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
               <div className="relative w-full h-48 bg-midnight-violet overflow-hidden flex items-center justify-center">
                 <div className="text-6xl">🎯</div>
               </div>
@@ -382,10 +382,10 @@ export default function Landing() {
                 </div>
                 <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Play Now →</span>
               </div>
-            </div>
+            </Link>
 
             {/* Game 3 */}
-            <div className="rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+            <Link to="/gaming" className="rounded-lg bg-shadow-grey hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
               <div className="relative w-full h-48 bg-midnight-violet overflow-hidden flex items-center justify-center">
                 <div className="text-6xl">🎲</div>
               </div>
@@ -396,7 +396,7 @@ export default function Landing() {
                 </div>
                 <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Play Now →</span>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -584,3 +584,4 @@ export default function Landing() {
     </div>
   );
 }
+

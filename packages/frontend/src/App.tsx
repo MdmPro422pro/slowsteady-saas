@@ -21,6 +21,13 @@ import FaucetsPage from './pages/FaucetsPage';
 import CommunityPage from './pages/CommunityPage';
 import MembershipSuccess from './pages/MembershipSuccess';
 import MembershipCancel from './pages/MembershipCancel';
+import SettingsPage from './pages/SettingsPage';
+import PaymentsPage from './pages/PaymentsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import NotificationsPage from './pages/NotificationsPage';
+import SupportPage from './pages/SupportPage';
+import SecurityPage from './pages/SecurityPage';
+import DocumentationPage from './pages/DocumentationPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { config } from './lib/wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
@@ -71,6 +78,13 @@ export default function App() {
                 <Route path="/community" element={<CommunityPage />} />
                 <Route path="/membership/success" element={<MembershipSuccess />} />
                 <Route path="/membership/cancel" element={<MembershipCancel />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/payments" element={<PaymentsPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/support" element={<SupportPage />} />
+                <Route path="/security" element={<SecurityPage />} />
+                <Route path="/docs" element={<DocumentationPage />} />
                 <Route
                   path="/dashboard"
                   element={
