@@ -47,7 +47,18 @@ export default function SettingsPage() {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/settings/${user?.id}`);
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Please log in to view settings');
+        return;
+      }
+      
+      const response = await fetch(`${API_URL}/api/settings/${user?.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
       if (response.ok) {
         const data = await response.json();
         setDisplayName(data.name || '');
@@ -80,9 +91,19 @@ export default function SettingsPage() {
     if (!user?.id) return;
     setLoading(true);
     try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Please log in to save settings');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`${API_URL}/api/settings/${user.id}/account`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           name: displayName,
           email,
@@ -111,9 +132,19 @@ export default function SettingsPage() {
     if (!user?.id) return;
     setLoading(true);
     try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Please log in to save settings');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`${API_URL}/api/settings/${user.id}/notifications`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           emailNotifications,
           smsNotifications,
@@ -139,9 +170,19 @@ export default function SettingsPage() {
     if (!user?.id) return;
     setLoading(true);
     try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Please log in to save settings');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`${API_URL}/api/settings/${user.id}/privacy`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           profileVisibility,
           showEmail,
@@ -165,9 +206,19 @@ export default function SettingsPage() {
     if (!user?.id) return;
     setLoading(true);
     try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Please log in to save settings');
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`${API_URL}/api/settings/${user.id}/display`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           language,
           timezone,
