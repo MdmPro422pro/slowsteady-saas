@@ -29,6 +29,30 @@ model User {
   // Admin role
   isAdmin           Boolean      @default(false)
   
+  // User Settings
+  phone             String?
+  address           String?
+  city              String?
+  state             String?
+  zipCode           String?
+  country           String?
+  language          String       @default("en")
+  timezone          String       @default("America/New_York")
+  dateFormat        String       @default("MM/DD/YYYY")
+  theme             String       @default("dark")
+  
+  // Notification Settings
+  emailNotifications Boolean     @default(true)
+  smsNotifications   Boolean     @default(false)
+  pushNotifications  Boolean     @default(true)
+  weeklyDigest       Boolean     @default(true)
+  marketingEmails    Boolean     @default(false)
+  
+  // Privacy Settings
+  profileVisibility  String      @default("public")
+  showEmail          Boolean     @default(false)
+  showActivity       Boolean     @default(true)
+  
   // Metadata
   emailVerified     Boolean      @default(false)
   createdAt         DateTime     @default(now())

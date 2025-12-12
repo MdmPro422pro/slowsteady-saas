@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardPanel } from '../components/DashboardPanel';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../lib/toast';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -11,6 +13,11 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [zipCode, setZipCode] = useState('');
+  const [country, setCountry] = useState('United States');
 
   // Notification Settings State
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -29,21 +36,156 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState('America/New_York');
   const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
   const [theme, setTheme] = useState('dark');
+  const [loading, setLoading] = useState(false);
 
-  const handleSaveAccount = () => {
-    toast.success('Account settings saved successfully');
+  // Load user settings on mount
+  useEffect(() => {
+    if (user?.id) {
+      loadSettings();
+    }
+  }, [user]);
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/settings/${user?.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDisplayName(data.name || '');
+        setEmail(data.email || '');
+        setPhone(data.phone || '');
+        setAddress(data.address || '');
+        setCity(data.city || '');
+        setState(data.state || '');
+        setZipCode(data.zipCode || '');
+        setCountry(data.country || 'United States');
+        setLanguage(data.language || 'en');
+        setTimezone(data.timezone || 'America/New_York');
+        setDateFormat(data.dateFormat || 'MM/DD/YYYY');
+        setTheme(data.theme || 'dark');
+        setEmailNotifications(data.emailNotifications ?? true);
+        setSmsNotifications(data.smsNotifications ?? false);
+        setPushNotifications(data.pushNotifications ?? true);
+        setWeeklyDigest(data.weeklyDigest ?? true);
+        setMarketingEmails(data.marketingEmails ?? false);
+        setProfileVisibility(data.profileVisibility || 'public');
+        setShowEmail(data.showEmail ?? false);
+        setShowActivity(data.showActivity ?? true);
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
   };
 
-  const handleSaveNotifications = () => {
-    toast.success('Notification preferences updated');
+  const handleSaveAccount = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/settings/${user.id}/account`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: displayName,
+          email,
+          phone,
+          address,
+          city,
+          state,
+          zipCode,
+          country,
+        }),
+      });
+      if (response.ok) {
+        toast.success('Account settings saved successfully');
+      } else {
+        toast.error('Failed to save account settings');
+      }
+    } catch (error) {
+      console.error('Error saving account:', error);
+      toast.error('Failed to save account settings');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSavePrivacy = () => {
-    toast.success('Privacy settings updated');
+  const handleSaveNotifications = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/settings/${user.id}/notifications`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emailNotifications,
+          smsNotifications,
+          pushNotifications,
+          weeklyDigest,
+          marketingEmails,
+        }),
+      });
+      if (response.ok) {
+        toast.success('Notification preferences updated');
+      } else {
+        toast.error('Failed to update notification settings');
+      }
+    } catch (error) {
+      console.error('Error saving notifications:', error);
+      toast.error('Failed to update notification settings');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSaveDisplay = () => {
-    toast.success('Display settings updated');
+  const handleSavePrivacy = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/settings/${user.id}/privacy`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profileVisibility,
+          showEmail,
+          showActivity,
+        }),
+      });
+      if (response.ok) {
+        toast.success('Privacy settings updated');
+      } else {
+        toast.error('Failed to update privacy settings');
+      }
+    } catch (error) {
+      console.error('Error saving privacy:', error);
+      toast.error('Failed to update privacy settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveDisplay = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/settings/${user.id}/display`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          language,
+          timezone,
+          dateFormat,
+          theme,
+        }),
+      });
+      if (response.ok) {
+        toast.success('Display settings updated');
+      } else {
+        toast.error('Failed to update display settings');
+      }
+    } catch (error) {
+      console.error('Error saving display:', error);
+      toast.error('Failed to update display settings');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const tabs = [
@@ -121,6 +263,83 @@ export default function SettingsPage() {
                     className="px-6 py-3 bg-gold text-midnight-violet rounded-lg font-semibold hover:bg-faded-copper transition"
                   >
                     Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-shadow-grey p-6 rounded-lg border-2 border-faded-copper">
+                <h2 className="text-2xl font-bold text-gold mb-6">Physical Address</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-frosted-mint mb-2 font-semibold">Street Address</label>
+                    <input
+                      type="text"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      className="w-full px-4 py-3 bg-midnight-violet border border-faded-copper rounded-lg text-frosted-mint focus:outline-none focus:border-gold"
+                      placeholder="123 Main Street"
+                    />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-frosted-mint mb-2 font-semibold">City</label>
+                      <input
+                        type="text"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="w-full px-4 py-3 bg-midnight-violet border border-faded-copper rounded-lg text-frosted-mint focus:outline-none focus:border-gold"
+                        placeholder="City"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-frosted-mint mb-2 font-semibold">State/Province</label>
+                      <input
+                        type="text"
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                        className="w-full px-4 py-3 bg-midnight-violet border border-faded-copper rounded-lg text-frosted-mint focus:outline-none focus:border-gold"
+                        placeholder="State"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-frosted-mint mb-2 font-semibold">ZIP/Postal Code</label>
+                      <input
+                        type="text"
+                        value={zipCode}
+                        onChange={(e) => setZipCode(e.target.value)}
+                        className="w-full px-4 py-3 bg-midnight-violet border border-faded-copper rounded-lg text-frosted-mint focus:outline-none focus:border-gold"
+                        placeholder="12345"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-frosted-mint mb-2 font-semibold">Country</label>
+                      <select
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        className="w-full px-4 py-3 bg-midnight-violet border border-faded-copper rounded-lg text-frosted-mint focus:outline-none focus:border-gold"
+                      >
+                        <option value="United States">United States</option>
+                        <option value="Canada">Canada</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Germany">Germany</option>
+                        <option value="France">France</option>
+                        <option value="Japan">Japan</option>
+                        <option value="China">China</option>
+                        <option value="India">India</option>
+                        <option value="Brazil">Brazil</option>
+                        <option value="Mexico">Mexico</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSaveAccount}
+                    className="px-6 py-3 bg-gold text-midnight-violet rounded-lg font-semibold hover:bg-faded-copper transition"
+                  >
+                    Save Address
                   </button>
                 </div>
               </div>
