@@ -20,7 +20,7 @@ interface OrderForm {
 
 export default function TradingPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'spot' | 'orders'>('spot');
+  const [activeTab, setActiveTab] = useState<'spot' | 'orders' | 'withdraw'>('spot');
   const [balance, setBalance] = useState<any>(null);
   const [currentPrice, setCurrentPrice] = useState<PriceData | null>(null);
   const [openOrders, setOpenOrders] = useState<any[]>([]);
@@ -32,6 +32,13 @@ export default function TradingPage() {
     type: 'MARKET',
     quantity: '',
     price: '',
+  });
+
+  const [withdrawForm, setWithdrawForm] = useState({
+    coin: 'BTC',
+    address: '',
+    amount: '',
+    network: '',
   });
 
   useEffect(() => {
@@ -194,6 +201,65 @@ export default function TradingPage() {
     }
   };
 
+  const handleWithdraw = async () => {
+    if (!user?.id) {
+      toast.error('Please log in to withdraw');
+      return;
+    }
+
+    if (!withdrawForm.address || !withdrawForm.amount || !withdrawForm.coin) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    if (parseFloat(withdrawForm.amount) <= 0) {
+      toast.error('Invalid withdrawal amount');
+      return;
+    }
+
+    if (!confirm(`⚠️ Are you sure you want to withdraw ${withdrawForm.amount} ${withdrawForm.coin} to ${withdrawForm.address}?\n\nThis action CANNOT be undone!`)) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Please log in to withdraw');
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/trading/withdraw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          coin: withdrawForm.coin,
+          address: withdrawForm.address,
+          amount: parseFloat(withdrawForm.amount),
+          network: withdrawForm.network || undefined,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast.success(`Withdrawal initiated! ID: ${result.id}`);
+        setWithdrawForm({ coin: 'BTC', address: '', amount: '', network: '' });
+        loadBalance();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to process withdrawal');
+      }
+    } catch (error: any) {
+      console.error('Withdrawal error:', error);
+      toast.error('Failed to process withdrawal');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getTotalValue = () => {
     if (!balance || !currentPrice) return '0.00';
     const btcBalance = balance.balances?.find((b: any) => b.asset === 'BTC')?.free || 0;
@@ -234,6 +300,16 @@ export default function TradingPage() {
             }`}
           >
             📝 Open Orders {openOrders.length > 0 && `(${openOrders.length})`}
+          </button>
+          <button
+            onClick={() => setActiveTab('withdraw')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+              activeTab === 'withdraw'
+                ? 'bg-gold text-midnight-violet'
+                : 'bg-shadow-grey text-frosted-mint hover:bg-clay-soil'
+            }`}
+          >
+            💸 Withdraw
           </button>
         </div>
 
@@ -419,6 +495,121 @@ export default function TradingPage() {
             ) : (
               <p className="text-frosted-mint text-center py-8">No open orders</p>
             )}
+          </div>
+        )}
+
+        {activeTab === 'withdraw' && (
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Withdrawal Form */}
+            <div className="bg-shadow-grey p-6 rounded-lg border-2 border-faded-copper">
+              <h2 className="text-2xl font-bold text-gold mb-6">💸 Withdraw Crypto</h2>
+              
+              <div className="mb-4">
+                <label className="block text-frosted-mint mb-2 font-semibold">Coin</label>
+                <select
+                  value={withdrawForm.coin}
+                  onChange={(e) => setWithdrawForm({ ...withdrawForm, coin: e.target.value })}
+                  className="w-full px-4 py-3 bg-midnight-violet border border-faded-copper rounded-lg text-frosted-mint focus:outline-none focus:border-gold"
+                >
+                  <option value="BTC">Bitcoin (BTC)</option>
+                  <option value="ETH">Ethereum (ETH)</option>
+                  <option value="BNB">Binance Coin (BNB)</option>
+                  <option value="USDT">Tether (USDT)</option>
+                  <option value="USDC">USD Coin (USDC)</option>
+                  <option value="ADA">Cardano (ADA)</option>
+                  <option value="SOL">Solana (SOL)</option>
+                  <option value="DOT">Polkadot (DOT)</option>
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-frosted-mint mb-2 font-semibold">Network (Optional)</label>
+                <input
+                  type="text"
+                  value={withdrawForm.network}
+                  onChange={(e) => setWithdrawForm({ ...withdrawForm, network: e.target.value })}
+                  className="w-full px-4 py-3 bg-midnight-violet border border-faded-copper rounded-lg text-frosted-mint focus:outline-none focus:border-gold"
+                  placeholder="e.g., BTC, ETH, BSC, TRC20"
+                />
+                <p className="text-frosted-mint text-xs mt-1">Leave empty for default network</p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-frosted-mint mb-2 font-semibold">Withdrawal Address</label>
+                <input
+                  type="text"
+                  value={withdrawForm.address}
+                  onChange={(e) => setWithdrawForm({ ...withdrawForm, address: e.target.value })}
+                  className="w-full px-4 py-3 bg-midnight-violet border border-faded-copper rounded-lg text-frosted-mint focus:outline-none focus:border-gold font-mono text-sm"
+                  placeholder="Enter destination address"
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-frosted-mint mb-2 font-semibold">Amount</label>
+                <input
+                  type="number"
+                  step="0.00000001"
+                  value={withdrawForm.amount}
+                  onChange={(e) => setWithdrawForm({ ...withdrawForm, amount: e.target.value })}
+                  className="w-full px-4 py-3 bg-midnight-violet border border-faded-copper rounded-lg text-frosted-mint focus:outline-none focus:border-gold"
+                  placeholder="0.00000000"
+                />
+              </div>
+
+              <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
+                <div className="flex items-start gap-2">
+                  <span className="text-red-500 text-xl">⚠️</span>
+                  <div>
+                    <div className="text-red-500 font-bold mb-1">IMPORTANT WARNING</div>
+                    <p className="text-frosted-mint text-sm">
+                      Double-check the withdrawal address and network. Sending to wrong address or network will result in permanent loss of funds. Withdrawals CANNOT be reversed.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleWithdraw}
+                disabled={loading}
+                className={`w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-lg transition ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {loading ? 'Processing...' : 'Withdraw Funds'}
+              </button>
+            </div>
+
+            {/* Account Balance & Info */}
+            <div>
+              <div className="bg-shadow-grey p-6 rounded-lg border-2 border-faded-copper mb-6">
+                <h3 className="text-xl font-bold text-gold mb-4">Available Balance</h3>
+                {balance ? (
+                  <div className="space-y-3">
+                    {balance.balances?.filter((b: any) => parseFloat(b.free) > 0).slice(0, 8).map((b: any) => (
+                      <div key={b.asset} className="flex justify-between items-center">
+                        <span className="text-frosted-mint font-semibold">{b.asset}</span>
+                        <span className="text-gold">{parseFloat(b.free).toFixed(8)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-frosted-mint">Loading balance...</p>
+                )}
+              </div>
+
+              <div className="bg-shadow-grey p-6 rounded-lg border-2 border-faded-copper">
+                <h3 className="text-xl font-bold text-gold mb-4">📋 Withdrawal Requirements</h3>
+                <ul className="text-frosted-mint text-sm space-y-2 list-disc list-inside">
+                  <li>Your Binance API key must have withdrawal permissions enabled</li>
+                  <li>Your IP address must be whitelisted in Binance</li>
+                  <li>Verify the withdrawal address carefully before confirming</li>
+                  <li>Check network fees before withdrawing</li>
+                  <li>Minimum withdrawal amounts apply per coin</li>
+                  <li>Withdrawals may take 10-30 minutes to process</li>
+                </ul>
+              </div>
+            </div>
           </div>
         )}
       </div>

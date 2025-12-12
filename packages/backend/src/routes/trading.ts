@@ -189,4 +189,112 @@ router.get('/orders/open', async (req: Request, res: Response) => {
   }
 });
 
+// Get deposit address
+router.get('/deposit/address/:coin', async (req: Request, res: Response) => {
+  try {
+    const { coin } = req.params;
+    const network = req.query.network as string | undefined;
+    
+    // SECURITY: Validate coin format
+    if (!/^[A-Z]{2,10}$/.test(coin)) {
+      return res.status(400).json({ error: 'Invalid coin symbol' });
+    }
+    
+    if (network && !/^[A-Z0-9]{2,20}$/.test(network)) {
+      return res.status(400).json({ error: 'Invalid network' });
+    }
+    
+    const address = await binance.getDepositAddress(coin, network);
+    res.json(address);
+  } catch (error: any) {
+    console.error('Deposit address error:', error.message);
+    res.status(500).json({ error: 'Failed to get deposit address' });
+  }
+});
+
+// Get deposit history
+router.get('/deposit/history', async (req: Request, res: Response) => {
+  try {
+    const coin = req.query.coin as string | undefined;
+    const status = req.query.status ? parseInt(req.query.status as string) : undefined;
+    
+    if (coin && !/^[A-Z]{2,10}$/.test(coin)) {
+      return res.status(400).json({ error: 'Invalid coin symbol' });
+    }
+    
+    const history = await binance.getDepositHistory(coin, status);
+    res.json(history);
+  } catch (error: any) {
+    console.error('Deposit history error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch deposit history' });
+  }
+});
+
+// Withdraw crypto
+router.post('/withdraw', async (req: Request, res: Response) => {
+  try {
+    const { coin, address, amount, network } = req.body;
+    
+    // SECURITY: Strict validation for withdrawals
+    if (!coin || !address || !amount) {
+      return res.status(400).json({ error: 'Missing required fields: coin, address, amount' });
+    }
+    
+    if (!/^[A-Z]{2,10}$/.test(coin)) {
+      return res.status(400).json({ error: 'Invalid coin symbol' });
+    }
+    
+    if (typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+    
+    // SECURITY: Basic address validation (expand based on coin type)
+    if (typeof address !== 'string' || address.length < 26 || address.length > 120) {
+      return res.status(400).json({ error: 'Invalid withdrawal address' });
+    }
+    
+    if (network && !/^[A-Z0-9]{2,20}$/.test(network)) {
+      return res.status(400).json({ error: 'Invalid network' });
+    }
+    
+    // IMPORTANT: Log withdrawal attempts for security monitoring
+    console.log(`WITHDRAWAL REQUEST: User ${req.user?.userId} withdrawing ${amount} ${coin} to ${address}`);
+    
+    const result = await binance.withdrawCrypto(coin, address, amount, network);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Withdrawal error:', error.message);
+    res.status(500).json({ error: error.message || 'Failed to process withdrawal' });
+  }
+});
+
+// Get withdrawal history
+router.get('/withdraw/history', async (req: Request, res: Response) => {
+  try {
+    const coin = req.query.coin as string | undefined;
+    const status = req.query.status ? parseInt(req.query.status as string) : undefined;
+    
+    if (coin && !/^[A-Z]{2,10}$/.test(coin)) {
+      return res.status(400).json({ error: 'Invalid coin symbol' });
+    }
+    
+    const history = await binance.getWithdrawalHistory(coin, status);
+    res.json(history);
+  } catch (error: any) {
+    console.error('Withdrawal history error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch withdrawal history' });
+  }
+});
+
+// Get coin info (networks, fees, limits)
+router.get('/coins/info', async (req: Request, res: Response) => {
+  try {
+    const info = await binance.getCoinInfo();
+    res.json(info);
+  } catch (error: any) {
+    console.error('Coin info error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch coin information' });
+  }
+});
+
 export default router;

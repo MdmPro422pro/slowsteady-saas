@@ -169,3 +169,90 @@ export async function get24hrStats(symbol: string) {
     throw new Error(`Failed to get 24hr stats for ${symbol}`);
   }
 }
+
+/**
+ * Get deposit address for a coin
+ */
+export async function getDepositAddress(coin: string, network?: string) {
+  try {
+    const params: any = { coin };
+    if (network) {
+      params.network = network;
+    }
+    const response = await binanceClient.depositAddress(params);
+    return response.data;
+  } catch (error: any) {
+    console.error('Binance deposit address error:', error.response?.data || error.message);
+    throw new Error(`Failed to get deposit address for ${coin}`);
+  }
+}
+
+/**
+ * Get deposit history
+ */
+export async function getDepositHistory(coin?: string, status?: number) {
+  try {
+    const params: any = {};
+    if (coin) params.coin = coin;
+    if (status !== undefined) params.status = status;
+    
+    const response = await binanceClient.depositHistory(params);
+    return response.data;
+  } catch (error: any) {
+    console.error('Binance deposit history error:', error.response?.data || error.message);
+    throw new Error('Failed to get deposit history');
+  }
+}
+
+/**
+ * Withdraw crypto (REQUIRES IP WHITELIST AND WITHDRAWAL ENABLED ON API KEY)
+ */
+export async function withdrawCrypto(coin: string, address: string, amount: number, network?: string) {
+  try {
+    const params: any = {
+      coin,
+      address,
+      amount: amount.toString(),
+    };
+    
+    if (network) {
+      params.network = network;
+    }
+    
+    const response = await binanceClient.withdraw(params);
+    return response.data;
+  } catch (error: any) {
+    console.error('Binance withdrawal error:', error.response?.data || error.message);
+    throw new Error(`Failed to withdraw ${coin}: ${error.response?.data?.msg || error.message}`);
+  }
+}
+
+/**
+ * Get withdrawal history
+ */
+export async function getWithdrawalHistory(coin?: string, status?: number) {
+  try {
+    const params: any = {};
+    if (coin) params.coin = coin;
+    if (status !== undefined) params.status = status;
+    
+    const response = await binanceClient.withdrawHistory(params);
+    return response.data;
+  } catch (error: any) {
+    console.error('Binance withdrawal history error:', error.response?.data || error.message);
+    throw new Error('Failed to get withdrawal history');
+  }
+}
+
+/**
+ * Get coin information (networks, fees, etc)
+ */
+export async function getCoinInfo() {
+  try {
+    const response = await binanceClient.capitalConfigGetall();
+    return response.data;
+  } catch (error: any) {
+    console.error('Binance coin info error:', error.response?.data || error.message);
+    throw new Error('Failed to get coin information');
+  }
+}
