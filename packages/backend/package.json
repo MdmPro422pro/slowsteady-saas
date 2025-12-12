@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@binance/connector": "^3.6.1",
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^7.1.0",
     "axios": "^1.13.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
