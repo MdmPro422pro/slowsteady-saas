@@ -3,11 +3,17 @@ import { Spot } from '@binance/connector';
 const apiKey = process.env.BINANCE_API_KEY || '';
 const apiSecret = process.env.BINANCE_API_SECRET || '';
 const isTestnet = process.env.BINANCE_TESTNET === 'true';
+const useBinanceUS = process.env.BINANCE_US === 'true';
 
 // Initialize Binance client
-const baseURL = isTestnet 
-  ? 'https://testnet.binance.vision' 
-  : 'https://api.binance.com';
+let baseURL: string;
+if (isTestnet) {
+  baseURL = 'https://testnet.binance.vision';
+} else if (useBinanceUS) {
+  baseURL = 'https://api.binance.us';
+} else {
+  baseURL = 'https://api.binance.com';
+}
 
 export const binanceClient = new Spot(apiKey, apiSecret, { baseURL });
 
