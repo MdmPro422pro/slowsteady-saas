@@ -411,7 +411,7 @@ export default function Landing() {
           
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Faucet 1 */}
-            <div className="rounded-lg bg-midnight-violet hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+            <Link to="/faucets" className="rounded-lg bg-midnight-violet hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
               <div className="relative w-full h-48 bg-shadow-grey overflow-hidden flex items-center justify-center">
                 <div className="text-6xl">💧</div>
               </div>
@@ -422,10 +422,10 @@ export default function Landing() {
                 </div>
                 <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Get Crypto →</span>
               </div>
-            </div>
+            </Link>
 
             {/* Faucet 2 */}
-            <div className="rounded-lg bg-midnight-violet hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+            <Link to="/faucets" className="rounded-lg bg-midnight-violet hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
               <div className="relative w-full h-48 bg-shadow-grey overflow-hidden flex items-center justify-center">
                 <div className="text-6xl">🚰</div>
               </div>
@@ -436,10 +436,10 @@ export default function Landing() {
                 </div>
                 <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Get Crypto →</span>
               </div>
-            </div>
+            </Link>
 
             {/* Faucet 3 */}
-            <div className="rounded-lg bg-midnight-violet hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
+            <Link to="/faucets" className="rounded-lg bg-midnight-violet hover:bg-clay-soil transition-all duration-300 border-2 border-faded-copper group overflow-hidden flex flex-col cursor-pointer">
               <div className="relative w-full h-48 bg-shadow-grey overflow-hidden flex items-center justify-center">
                 <div className="text-6xl">💰</div>
               </div>
@@ -450,7 +450,7 @@ export default function Landing() {
                 </div>
                 <span className="text-gold font-semibold group-hover:text-frosted-mint transition-colors">Get Crypto →</span>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>

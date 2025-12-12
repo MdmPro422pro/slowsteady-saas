@@ -99,14 +99,14 @@ router.get('/analytics', async (req, res) => {
         },
         contracts: {
           total: totalContracts,
-          byStatus: contractsByStatus.reduce((acc, item) => {
+          byStatus: contractsByStatus.reduce((acc: any, item: any) => {
             acc[item.status] = item._count;
             return acc;
           }, {} as Record<string, number>)
         },
         memberships: {
           total: totalMemberships,
-          byTier: membershipsByTier.reduce((acc, item) => {
+          byTier: membershipsByTier.reduce((acc: any, item: any) => {
             acc[item.tier] = item._count;
             return acc;
           }, {} as Record<string, number>)

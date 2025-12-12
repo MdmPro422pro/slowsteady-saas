@@ -132,7 +132,7 @@ export function initializeWebSocket(httpServer: HTTPServer) {
         });
 
         // Send messages in chronological order
-        socket.emit('message_history', messages.reverse().map(msg => ({
+        socket.emit('message_history', messages.reverse().map((msg: any) => ({
           id: msg.id,
           walletAddress: msg.walletAddress,
           username: msg.username,
