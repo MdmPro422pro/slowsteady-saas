@@ -10,6 +10,7 @@ import stripeRoutes from "./routes/stripe";
 import contractsRoutes from "./routes/contracts";
 import adminRoutes from "./routes/admin";
 import settingsRoutes from "./routes/settings";
+import tradingRoutes from "./routes/trading";
 import { initializeWebSocket } from "./lib/socket";
 
 dotenv.config();
@@ -76,6 +77,9 @@ app.use("/api/admin", adminRoutes);
 
 // User settings routes
 app.use("/api/settings", settingsRoutes);
+
+// Trading routes (Binance integration)
+app.use("/api/trading", tradingRoutes);
 
 // TODO: Add KYC endpoints, wallet operations, and APIs for your frontend.
 app.get("/", (_req, res) => res.send("Slowsteady backend running"));

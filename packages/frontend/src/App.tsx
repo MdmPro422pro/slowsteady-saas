@@ -28,6 +28,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import SupportPage from './pages/SupportPage';
 import SecurityPage from './pages/SecurityPage';
 import DocumentationPage from './pages/DocumentationPage';
+import TradingPage from './pages/TradingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { config } from './lib/wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
@@ -85,6 +86,7 @@ export default function App() {
                 <Route path="/support" element={<SupportPage />} />
                 <Route path="/security" element={<SecurityPage />} />
                 <Route path="/docs" element={<DocumentationPage />} />
+                <Route path="/trading" element={<TradingPage />} />
                 <Route
                   path="/dashboard"
                   element={
