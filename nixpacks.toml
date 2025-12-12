@@ -1,0 +1,13 @@
+nixpacks.version = "1.21.0"
+
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "pnpm-9_x"]
+
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile"]
+
+[phases.build]
+cmds = ["cd packages/backend && pnpm run build"]
+
+[start]
+cmd = "cd packages/backend && pnpm start"
