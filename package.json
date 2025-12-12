@@ -13,6 +13,6 @@
   "devDependencies": {
     "concurrently": "^8.2.0",
     "typescript": "^5.4.0",
-    "pnpm": "^8.0.0"
+    "pnpm": "^10.24.0"
   }
 }

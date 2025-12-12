@@ -12,8 +12,8 @@ importers:
         specifier: ^8.2.0
         version: 8.2.2
       pnpm:
-        specifier: ^8.0.0
-        version: 8.15.9
+        specifier: ^10.24.0
+        version: 10.24.0
       typescript:
         specifier: ^5.4.0
         version: 5.9.3
@@ -2680,9 +2680,9 @@ packages:
     resolution: {integrity: sha512-40QW5YalBNfQo5yRYmiw7Yz6TKKVr3h6970B2YE+3fQpsWcrbj1PzJgxeJ19DRQjhMbKPIuMY8rFaXc8moolVw==}
     engines: {node: '>=10.13.0'}
 
-  pnpm@8.15.9:
-    resolution: {integrity: sha512-SZQ0ydj90aJ5Tr9FUrOyXApjOrzuW7Fee13pDzL0e1E6ypjNXP0AHDHw20VLw4BO3M1XhQHkyik6aBYWa72fgQ==}
-    engines: {node: '>=16.14'}
+  pnpm@10.24.0:
+    resolution: {integrity: sha512-Af+K5xtEGZA7ZcYPstydNM+LtuBtA73hEu8496NNaQTEJLpmvqXNzxKJAjC/OflYBHMUDtnJRv7zKLblI4o0Wg==}
+    engines: {node: '>=18.12'}
     hasBin: true
 
   pony-cause@2.1.11:
@@ -7227,7 +7227,7 @@ snapshots:
 
   pngjs@5.0.0: {}
 
-  pnpm@8.15.9: {}
+  pnpm@10.24.0: {}
 
   pony-cause@2.1.11: {}
 
