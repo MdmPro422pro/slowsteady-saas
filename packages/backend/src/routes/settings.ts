@@ -259,6 +259,27 @@ router.patch('/:userId/privacy', async (req: Request, res: Response) => {
     }
 
     const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: sanitizedData,
+    });
+
+    res.json({ message: 'Privacy settings updated', user: updatedUser });
+  } catch (error) {
+    console.error('Error updating privacy settings:', error);
+    res.status(500).json({ error: 'Failed to update privacy settings' });
+  }
+});
+
+// Update display settings
+router.patch('/:userId/display', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    
+    // SECURITY: Verify user can only update their own settings
+    if (req.user?.userId !== userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
     const { language, timezone, dateFormat, theme } = req.body;
     
     // SECURITY: Validate display settings with whitelists
@@ -302,27 +323,6 @@ router.patch('/:userId/privacy', async (req: Request, res: Response) => {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: sanitizedData,
-    });
-// Update display settings
-router.patch('/:userId/display', async (req: Request, res: Response) => {
-  try {
-    const { userId } = req.params;
-    
-    // SECURITY: Verify user can only update their own settings
-    if (req.user?.userId !== userId) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    
-    const { language, timezone, dateFormat, theme } = req.body;
-
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        ...(language !== undefined && { language }),
-        ...(timezone !== undefined && { timezone }),
-        ...(dateFormat !== undefined && { dateFormat }),
-        ...(theme !== undefined && { theme }),
-      },
     });
 
     res.json({ message: 'Display settings updated', user: updatedUser });
